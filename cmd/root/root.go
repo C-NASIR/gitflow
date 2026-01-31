@@ -23,6 +23,7 @@ func Execute() {
 
 	rootCmd.AddCommand(VersionCmd())
 	rootCmd.AddCommand(statusCmd())
+	rootCmd.AddCommand(configCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
