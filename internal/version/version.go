@@ -5,7 +5,7 @@ import "runtime"
 var (
 	Version = "dev"
 	Commit  = "none"
-	Date 	= "unkown"
+	Date    = "unkown"
 )
 
 func String() string {

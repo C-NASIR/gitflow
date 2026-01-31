@@ -8,9 +8,9 @@ import (
 
 func VersionCmd() *cobra.Command {
 	return &cobra.Command{
-		Use: "version",
+		Use:   "version",
 		Short: "Print gitflow version information",
-		RunE: func (cmd *cobra.Command, args []string)  error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.Println(version.String())
 			return nil
 		},
