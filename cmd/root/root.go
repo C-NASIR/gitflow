@@ -28,6 +28,7 @@ func Execute() {
 	rootCmd.AddCommand(configCmd())
 	rootCmd.AddCommand(startCmd())
 	rootCmd.AddCommand(syncCmd())
+	rootCmd.AddCommand(cleanupCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())

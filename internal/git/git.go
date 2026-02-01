@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 // Client runs git commands scoped to a repository path.
@@ -141,5 +142,74 @@ func (c *Client) Push(remote, branch string, forceWithLease bool) error {
 	}
 	args = append(args, remote, branch)
 	_, err := c.Run(args...)
+	return err
+}
+
+// ListLocalBranches returns the list of local branch names.
+func (c *Client) ListLocalBranches() ([]string, error) {
+	out, err := c.Run("for-each-ref", "--format=%(refname:short)", "refs/heads/")
+	if err != nil {
+		return nil, err
+	}
+	var branches []string
+	for _, line := range strings.Split(out, "\n") {
+		b := strings.TrimSpace(line)
+		if b == "" {
+			continue
+		}
+		branches = append(branches, b)
+	}
+	return branches, nil
+}
+
+// MergedBranches lists branches merged into the target branch.
+func (c *Client) MergedBranches(target string) ([]string, error) {
+	out, err := c.Run("branch", "--merged", target)
+	if err != nil {
+		return nil, err
+	}
+	var branches []string
+	for _, line := range strings.Split(out, "\n") {
+		b := strings.TrimSpace(strings.TrimPrefix(line, "*"))
+		if b == "" {
+			continue
+		}
+		if b == target {
+			continue
+		}
+		branches = append(branches, b)
+	}
+	return branches, nil
+}
+
+// BranchAgeDays returns the age of the branch tip commit in days.
+func (c *Client) BranchAgeDays(branch string) (int, error) {
+	out, err := c.Run("log", "-1", "--format=%ct", branch)
+	if err != nil {
+		return 0, err
+	}
+	var ts int64
+	_, err = fmt.Sscanf(out, "%d", &ts)
+	if err != nil {
+		return 0, err
+	}
+	commitTime := time.Unix(ts, 0)
+	age := time.Since(commitTime)
+	return int(age.Hours() / 24), nil
+}
+
+// DeleteBranch deletes a local branch, optionally forcing.
+func (c *Client) DeleteBranch(branch string, force bool) error {
+	flag := "-d"
+	if force {
+		flag = "-D"
+	}
+	_, err := c.Run("branch", flag, branch)
+	return err
+}
+
+// DeleteRemoteBranch deletes a branch from the remote.
+func (c *Client) DeleteRemoteBranch(remote, branch string) error {
+	_, err := c.Run("push", remote, "--delete", branch)
 	return err
 }
