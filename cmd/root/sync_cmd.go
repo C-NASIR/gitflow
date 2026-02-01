@@ -24,6 +24,11 @@ func syncCmd() *cobra.Command {
 				return fmt.Errorf("choose only one of merge or rebase")
 			}
 
+			c, err := commonFromCmd(cmd)
+			if err != nil {
+				return err
+			}
+
 			repoPath, err := os.Getwd()
 			if err != nil {
 				return fmt.Errorf("failed to get current directory: %w", err)
@@ -66,19 +71,23 @@ func syncCmd() *cobra.Command {
 				return err
 			}
 
-			cmd.Printf("Base Branch: %s\n", out.BaseBranch)
-			cmd.Printf("Current branch: %s\n", out.CurrentBranch)
-			cmd.Printf("Strategy: %s\n", out.Strategy)
+			c.UI.Header("Sync branch")
+			printConfigSource(c.UI, c.ConfigResult.Path)
+
+			c.UI.Line("Base branch: %s", out.BaseBranch)
+			c.UI.Line("Current branch: %s", out.CurrentBranch)
+			c.UI.Line("Strategy: %s", out.Strategy)
 
 			if out.Pushed {
 				if out.ForcePushed {
-					cmd.Printf("Remote: pushed with force lease\n")
+					c.UI.Warn("Remote: pushed with force with lease")
 				} else {
-					cmd.Printf("Remote: pushed\n")
+					c.UI.Success("Remote: pushed")
 				}
 			} else {
-				cmd.Printf("Remote: not pushed\n")
+				c.UI.Warn("Remote: not pushed")
 			}
+
 			return nil
 		},
 	}

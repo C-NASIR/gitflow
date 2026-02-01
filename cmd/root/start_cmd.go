@@ -25,15 +25,21 @@ func startCmd() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := ensureOneKind(bugfix, hotfix); err != nil {
+				return err
+			}
+
+			c, err := commonFromCmd(cmd)
+			if err != nil {
+				return err
+			}
+
 			kind := "feature"
 			if bugfix {
 				kind = "bugfix"
 			}
 			if hotfix {
 				kind = "hotfix"
-			}
-			if bugfix && hotfix {
-				return fmt.Errorf("choose only one of bugfix or hotfix")
 			}
 
 			repoPath, err := os.Getwd()
@@ -58,13 +64,17 @@ func startCmd() *cobra.Command {
 				return err
 			}
 
-			cmd.Printf("Base branch: %s\n", out.BaseBranch)
-			cmd.Printf("New branch: %s\n", out.NewBranch)
+			c.UI.Header("Start branch")
+			printConfigSource(c.UI, c.ConfigResult.Path)
+
+			c.UI.Line("Base branch: %s", out.BaseBranch)
+			c.UI.Line("New branch: %s", out.NewBranch)
 			if out.Pushed {
-				cmd.Printf("Remote: pushed\n")
+				c.UI.Success("Remote: pushed")
 			} else {
-				cmd.Printf("Remote: not pushed\n")
+				c.UI.Warn("Remote: not pushed")
 			}
+
 			return nil
 		},
 	}

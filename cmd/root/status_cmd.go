@@ -13,6 +13,11 @@ func statusCmd() *cobra.Command {
 		Use:   "status",
 		Short: "Show repository status summary",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			c, err := commonFromCmd(cmd)
+			if err != nil {
+				return err
+			}
+
 			repoPath, err := os.Getwd()
 			if err != nil {
 				return fmt.Errorf("failed to get current directory: %w", err)
@@ -23,13 +28,16 @@ func statusCmd() *cobra.Command {
 				return err
 			}
 
-			dirtyText := "clean"
+			c.UI.Header("Repository status")
+			printConfigSource(c.UI, c.ConfigResult.Path)
+
+			c.UI.Line("Branch: %s", s.Branch)
 			if s.Dirty {
-				dirtyText = "dirty"
+				c.UI.Warn("Working tree: dirty")
+			} else {
+				c.UI.Success("Working tree: clean")
 			}
 
-			cmd.Printf("Branch: %s\n", s.Branch)
-			cmd.Printf("Working tree: %s\n", dirtyText)
 			return nil
 		},
 	}

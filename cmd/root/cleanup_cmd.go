@@ -21,6 +21,11 @@ func cleanupCmd() *cobra.Command {
 		Use:   "cleanup",
 		Short: "Delete merged or stale branches safely",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			c, err := commonFromCmd(cmd)
+			if err != nil {
+				return err
+			}
+
 			repoPath, err := os.Getwd()
 			if err != nil {
 				return fmt.Errorf("failed to get current directory: %w", err)
@@ -43,23 +48,26 @@ func cleanupCmd() *cobra.Command {
 				return err
 			}
 
-			cmd.Printf("Base branch: %s\n", out.BaseBranch)
-			cmd.Printf("Current branch: %s\n", out.Current)
+			c.UI.Header("Cleanup branches")
+			printConfigSource(c.UI, c.ConfigResult.Path)
+
+			c.UI.Line("Base branch: %s", out.BaseBranch)
+			c.UI.Line("Current branch: %s", out.Current)
 
 			if len(out.Deleted) == 0 {
-				cmd.Println("Deleted: none")
+				c.UI.Success("Deleted: none")
 				return nil
 			}
 
-			cmd.Printf("Deleted: %d\n", len(out.Deleted))
+			c.UI.Line("Deleted: %d", len(out.Deleted))
 			for _, b := range out.Deleted {
-				cmd.Printf("  %s\n", b)
+				c.UI.Line("  %s", b)
 			}
 
 			if len(out.RemoteDeleted) > 0 {
-				cmd.Printf("Remote deleted: %d\n", len(out.RemoteDeleted))
+				c.UI.Line("Remote deleted: %d", len(out.RemoteDeleted))
 				for _, b := range out.RemoteDeleted {
-					cmd.Printf("  %s\n", b)
+					c.UI.Line("  %s", b)
 				}
 			}
 
