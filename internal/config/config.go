@@ -1,3 +1,4 @@
+// Package config loads and validates gitflow configuration.
 package config
 
 import (
@@ -7,6 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Config is the top-level gitflow configuration.
 type Config struct {
 	Provider  ProviderConfig `yaml:"provider"`
 	Branches  BranchConfig   `yaml:"branches"`
@@ -14,6 +16,7 @@ type Config struct {
 	UI        UIConfig       `yaml:"ui"`
 }
 
+// ProviderConfig controls optional hosting provider integration.
 type ProviderConfig struct {
 	Type     string `yaml:"type"`
 	BaseURL  string `yaml:"base_url"`
@@ -22,6 +25,7 @@ type ProviderConfig struct {
 	Repo     string `yaml:"repo"`
 }
 
+// BranchConfig contains naming conventions for branches.
 type BranchConfig struct {
 	FeaturePrefix string `yaml:"feature_prefix"`
 	BugfixPrefix  string `yaml:"bugfix_prefix"`
@@ -30,41 +34,48 @@ type BranchConfig struct {
 	DevelopBranch string `yaml:"develop_branch"`
 }
 
+// WorkflowConfig groups workflow-specific settings.
 type WorkflowConfig struct {
 	Start   StartConfig   `yaml:"start"`
 	Sync    SyncConfig    `yaml:"sync"`
 	Cleanup CleanupConfig `yaml:"cleanup"`
 }
 
+// StartConfig governs the start workflow behavior.
 type StartConfig struct {
 	BaseBranch string `yaml:"base_branch"`
 	AutoPush   bool   `yaml:"auto_push"`
 	FetchFirst bool   `yaml:"fetch_first"`
 }
 
+// SyncConfig governs syncing behavior.
 type SyncConfig struct {
 	Strategy  string `yaml:"strategy"`
 	AutoPush  bool   `yaml:"auto_push"`
 	ForcePush bool   `yaml:"force_push"`
 }
 
+// CleanupConfig governs cleanup workflow behavior.
 type CleanupConfig struct {
 	MergedOnly        bool     `yaml:"merged_only"`
 	AgeThresholdDays  int      `yaml:"age_threshold_days"`
 	ProtectedBranches []string `yaml:"protected_branches"`
 }
 
+// UIConfig controls CLI output styling.
 type UIConfig struct {
 	Color   bool `yaml:"color"`
 	Emoji   bool `yaml:"emoji"`
 	Verbose bool `yaml:"verbose"`
 }
 
+// LoadResult captures the config and its source path.
 type LoadResult struct {
 	Path   string
 	Config *Config
 }
 
+// Load searches for a config starting from the working directory.
 func Load() (*LoadResult, error) {
 	startDir, err := os.Getwd()
 	if err != nil {
@@ -74,6 +85,7 @@ func Load() (*LoadResult, error) {
 	return LoadFromDir(startDir)
 }
 
+// LoadFromDir searches for a config starting from startDir.
 func LoadFromDir(startDir string) (*LoadResult, error) {
 	path, err := findConfig(startDir)
 	if err != nil {
@@ -107,6 +119,7 @@ func loadFromPath(path string) (*Config, error) {
 	return cfg, nil
 }
 
+// Validate fills defaults and checks for invalid settings.
 func (c *Config) Validate() error {
 	if c.Branches.MainBranch == "" {
 		c.Branches.MainBranch = "main"

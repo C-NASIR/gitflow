@@ -5,12 +5,14 @@ import (
 	"gitflow/internal/git"
 )
 
+// Status captures current repository state.
 type Status struct {
 	RepoPath string
 	Branch   string
 	Dirty    bool
 }
 
+// GetStatus inspects a repo and returns its status.
 func GetStatus(repoPath string) (*Status, error) {
 	client, err := git.NewClient(repoPath)
 	if err != nil {

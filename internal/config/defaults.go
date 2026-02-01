@@ -1,5 +1,6 @@
 package config
 
+// Default returns a Config with built-in defaults.
 func Default() *Config {
 	return &Config{
 		Branches: BranchConfig{

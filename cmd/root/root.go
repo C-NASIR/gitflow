@@ -1,3 +1,4 @@
+// Package root wires the CLI commands for gitflow.
 package root
 
 import (
@@ -14,6 +15,7 @@ var rootCmd = &cobra.Command{
 	Long:  "gitflow is a professional CLI to automate common git workflow and optionally integrate git hosting providers",
 }
 
+// Execute runs the gitflow CLI.
 func Execute() {
 	rootCmd.SetOut(os.Stdout)
 	rootCmd.SetErr(os.Stderr)

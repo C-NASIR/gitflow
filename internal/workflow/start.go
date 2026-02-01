@@ -1,3 +1,4 @@
+// Package workflow implements gitflow workflow operations.
 package workflow
 
 import (
@@ -8,6 +9,7 @@ import (
 	"strings"
 )
 
+// StartOptions defines inputs for creating a new branch.
 type StartOptions struct {
 	Kind     string
 	RepoPath string
@@ -15,12 +17,14 @@ type StartOptions struct {
 	Name     string
 }
 
+// StartResult reports the created branch details.
 type StartResult struct {
 	BaseBranch string
 	NewBranch  string
 	Pushed     bool
 }
 
+// Start creates and optionally pushes a new branch.
 func Start(cfg *config.Config, opts StartOptions) (*StartResult, error) {
 	if opts.RepoPath == "" {
 		return nil, fmt.Errorf("repo path is required")
