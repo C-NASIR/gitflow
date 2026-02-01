@@ -1,0 +1,11 @@
+branches:
+  feature_prefix: feature/
+  bugfix_prefix: bugfix/
+  hotfix_prefix: hotfix/
+  main_branch: main
+
+workflows:
+  start:
+    base_branch: main
+    auto_push: true
+    fetch_first: true

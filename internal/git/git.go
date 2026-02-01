@@ -64,9 +64,47 @@ func (c *Client) CurrentBranch() (string, error) {
 }
 
 func (c *Client) IsDirty() (bool, error) {
-	out, err := c.Run("status", "--porcelain")
+	out, err := c.Run("status", "--porcelain", "--untracked-files=all")
 	if err != nil {
 		return false, err
 	}
 	return len(out) > 0, nil
+}
+
+func (c *Client) Fetch(remote string) error {
+	_, err := c.Run("fetch", remote)
+	return err
+}
+
+func (c *Client) Checkout(branch string) error {
+	_, err := c.Run("checkout", branch)
+	return err
+}
+
+func (c *Client) CheckoutNew(branch string) error {
+	_, err := c.Run("checkout", "-b", branch)
+	return err
+}
+
+func (c *Client) Pull(remote, branch string) error {
+	_, err := c.Run("pull", remote, branch)
+	return err
+}
+
+func (c *Client) PushSetUpstream(remote, branch string) error {
+	_, err := c.Run("push", "-u", remote, branch)
+	return err
+}
+
+func (c *Client) HasRemote(remote string) (bool, error) {
+	out, err := c.Run("remote")
+	if err != nil {
+		return false, err
+	}
+	for _, line := range strings.Split(out, "\n") {
+		if strings.TrimSpace(line) == remote {
+			return true, nil
+		}
+	}
+	return false, nil
 }
