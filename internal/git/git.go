@@ -120,3 +120,26 @@ func (c *Client) HasRemote(remote string) (bool, error) {
 	}
 	return false, nil
 }
+
+// Rebase rebases the current branch onto the target.
+func (c *Client) Rebase(target string) error {
+	_, err := c.Run("rebase", target)
+	return err
+}
+
+// Merge merges the target branch into the current branch.
+func (c *Client) Merge(target string) error {
+	_, err := c.Run("merge", target)
+	return err
+}
+
+// Push pushes the branch to the remote, optionally with force lease.
+func (c *Client) Push(remote, branch string, forceWithLease bool) error {
+	args := []string{"push"}
+	if forceWithLease {
+		args = append(args, "--force-with-lease")
+	}
+	args = append(args, remote, branch)
+	_, err := c.Run(args...)
+	return err
+}

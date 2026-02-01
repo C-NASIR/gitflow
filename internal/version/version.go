@@ -7,9 +7,9 @@ var (
 	// Version is the gitflow build version.
 	Version = "dev"
 	// Commit is the git commit hash for the build.
-	Commit  = "none"
+	Commit = "none"
 	// Date is the build timestamp.
-	Date    = "unkown"
+	Date = "unkown"
 )
 
 // String formats version information for display.
