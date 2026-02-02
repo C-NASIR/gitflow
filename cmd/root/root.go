@@ -3,6 +3,7 @@ package root
 
 import (
 	"fmt"
+	"gitflow/cmd/root/provider"
 	"gitflow/internal/version"
 	"os"
 
@@ -29,6 +30,7 @@ func Execute() {
 	rootCmd.AddCommand(startCmd())
 	rootCmd.AddCommand(syncCmd())
 	rootCmd.AddCommand(cleanupCmd())
+	rootCmd.AddCommand(provider.Cmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
