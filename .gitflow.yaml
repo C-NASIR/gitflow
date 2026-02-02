@@ -4,8 +4,21 @@ branches:
   hotfix_prefix: hotfix/
   main_branch: main
 
+provider:
+  type: github
+  token_env: GITHUB_TOKEN
+  owner: myorg
+  repo: myrepo
+
 workflows:
   start:
     base_branch: main
     auto_push: true
     fetch_first: true
+  pr:
+    draft: false
+    default_reviewers:
+      - alice
+      - bob
+    labels:
+      - needs-review

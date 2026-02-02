@@ -37,6 +37,7 @@ type BranchConfig struct {
 // WorkflowConfig groups workflow-specific settings.
 type WorkflowConfig struct {
 	Start   StartConfig   `yaml:"start"`
+	PR      PRConfig      `yaml:"pr"`
 	Sync    SyncConfig    `yaml:"sync"`
 	Cleanup CleanupConfig `yaml:"cleanup"`
 }
@@ -46,6 +47,12 @@ type StartConfig struct {
 	BaseBranch string `yaml:"base_branch"`
 	AutoPush   bool   `yaml:"auto_push"`
 	FetchFirst bool   `yaml:"fetch_first"`
+}
+
+type PRConfig struct {
+	Draft            bool     `yaml:"draft"`
+	DefaultReviewers []string `yaml:"default_reviewers"`
+	Labels           []string `yaml:"labels"`
 }
 
 // SyncConfig governs syncing behavior.

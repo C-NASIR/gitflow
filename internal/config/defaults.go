@@ -16,6 +16,11 @@ func Default() *Config {
 				AutoPush:   true,
 				FetchFirst: true,
 			},
+			PR: PRConfig{
+				Draft:            false,
+				DefaultReviewers: nil,
+				Labels:           nil,
+			},
 			Sync: SyncConfig{
 				Strategy:  "rebase",
 				AutoPush:  true,

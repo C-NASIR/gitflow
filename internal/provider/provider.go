@@ -4,13 +4,26 @@ package provider
 import (
 	"context"
 	"fmt"
+	"gitflow/pkg/types"
 )
 
 // Provider defines the hosting provider behaviors needed by the app.
 type Provider interface {
 	ValidateAuth(ctx context.Context) error
 	GetDefaultBranch(ctx context.Context) (string, error)
+	CreatePR(ctx context.Context, opts CreatePROptions) (*types.PullRequest, error)
 }
+
+type CreatePROptions struct {
+	Title       string
+	Description string
+	HeadBranch  string
+	BaseBranch  string
+	Draft       bool
+	Reviewers   []string
+	Labels      []string
+}
+
 type ProviderConfig struct {
 	Type    string
 	BaseURL string

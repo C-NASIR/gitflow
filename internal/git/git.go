@@ -213,3 +213,11 @@ func (c *Client) DeleteRemoteBranch(remote, branch string) error {
 	_, err := c.Run("push", remote, "--delete", branch)
 	return err
 }
+
+func (c *Client) HasUpstream() (bool, error) {
+	_, err := c.Run("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}")
+	if err != nil {
+		return false, nil
+	}
+	return true, nil
+}

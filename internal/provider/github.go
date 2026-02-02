@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"gitflow/pkg/types"
 	"io"
 	"net/http"
 	"strings"
@@ -109,4 +110,69 @@ func (g *GitHub) do(ctx context.Context, method string, path string, body any, o
 	}
 
 	return resp, nil
+}
+
+func (g *GitHub) CreatePR(ctx context.Context, opts CreatePROptions) (*types.PullRequest, error) {
+	reqBody := map[string]any{
+		"title": opts.Title,
+		"head":  opts.HeadBranch,
+		"base":  opts.BaseBranch,
+		"body":  opts.Description,
+		"draft": opts.Draft,
+	}
+
+	var respBody struct {
+		Number  int    `json:"number"`
+		Title   string `json:"title"`
+		Body    string `json:"body"`
+		State   string `json:"state"`
+		HTMLURL string `json:"html_url"`
+		Draft   bool   `json:"draft"`
+		Head    struct {
+			Ref string `json:"ref"`
+		} `json:"head"`
+		Base struct {
+			Ref string `json:"ref"`
+		} `json:"base"`
+	}
+
+	_, err := g.do(ctx, http.MethodPost, "/pulls", reqBody, &respBody)
+	if err != nil {
+		return nil, err
+	}
+
+	pr := &types.PullRequest{
+		Number:      respBody.Number,
+		Title:       respBody.Title,
+		Description: respBody.Body,
+		State:       respBody.State,
+		HeadBranch:  respBody.Head.Ref,
+		BaseBranch:  respBody.Base.Ref,
+		URL:         respBody.HTMLURL,
+		Draft:       respBody.Draft,
+		Reviewers:   opts.Reviewers,
+		Labels:      opts.Labels,
+	}
+
+	if len(opts.Reviewers) > 0 {
+		reviewReq := map[string]any{
+			"reviewers": opts.Reviewers,
+		}
+		_, err := g.do(ctx, http.MethodPost, fmt.Sprintf("/pulls/%d/requested_reviewers", pr.Number), reviewReq, nil)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if len(opts.Labels) > 0 {
+		labelReq := map[string]any{
+			"labels": opts.Labels,
+		}
+		_, err := g.do(ctx, http.MethodPost, fmt.Sprintf("/issues/%d/labels", pr.Number), labelReq, nil)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return pr, nil
 }
