@@ -14,3 +14,15 @@ type PullRequest struct {
 	Reviewers []string
 	Labels    []string
 }
+
+type Branch struct {
+	Name          string
+	Current       bool
+	LastCommitMsg string
+	Author        string
+
+	AgeDays int
+
+	Ahead  int
+	Behind int
+}

@@ -97,12 +97,13 @@ func TestCleanupDeletesMergedBranch(t *testing.T) {
 		t.Fatalf("NewClient: %v", err)
 	}
 
-	branches, err := client.ListLocalBranches()
+	base := cfg.Branches.MainBranch
+	branches, err := client.ListLocalBranches(base)
 	if err != nil {
 		t.Fatalf("ListLocalBranches: %v", err)
 	}
 	for _, b := range branches {
-		if b == "feature/old" {
+		if b.Name == "feature/old" {
 			t.Fatalf("expected feature/old to be gone")
 		}
 	}

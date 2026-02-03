@@ -145,23 +145,6 @@ func (c *Client) Push(remote, branch string, forceWithLease bool) error {
 	return err
 }
 
-// ListLocalBranches returns the list of local branch names.
-func (c *Client) ListLocalBranches() ([]string, error) {
-	out, err := c.Run("for-each-ref", "--format=%(refname:short)", "refs/heads/")
-	if err != nil {
-		return nil, err
-	}
-	var branches []string
-	for _, line := range strings.Split(out, "\n") {
-		b := strings.TrimSpace(line)
-		if b == "" {
-			continue
-		}
-		branches = append(branches, b)
-	}
-	return branches, nil
-}
-
 // MergedBranches lists branches merged into the target branch.
 func (c *Client) MergedBranches(target string) ([]string, error) {
 	out, err := c.Run("branch", "--merged", target)

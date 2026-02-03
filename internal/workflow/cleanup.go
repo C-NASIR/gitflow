@@ -117,29 +117,29 @@ func Cleanup(cfg *config.Config, opts CleanupOptions) (*CleanupResult, error) {
 		mergedSet[b] = true
 	}
 
-	localBranches, err := client.ListLocalBranches()
+	localBranches, err := client.ListLocalBranches(base)
 	if err != nil {
 		return nil, err
 	}
 
 	var candidates []CleanupCandidate
 	for _, b := range localBranches {
-		c := CleanupCandidate{Name: b}
+		c := CleanupCandidate{Name: b.Name}
 
-		if protectedSet[b] {
+		if protectedSet[b.Name] {
 			c.Protected = true
 			c.Reason = "protected"
 			candidates = append(candidates, c)
 			continue
 		}
-		if b == current {
+		if b.Name == current {
 			c.Protected = true
 			c.Reason = "current"
 			candidates = append(candidates, c)
 			continue
 		}
 
-		ageDays, err := client.BranchAgeDays(b)
+		ageDays, err := client.BranchAgeDays(b.Name)
 		if err != nil {
 			c.Reason = "age check failed"
 			candidates = append(candidates, c)
@@ -147,7 +147,7 @@ func Cleanup(cfg *config.Config, opts CleanupOptions) (*CleanupResult, error) {
 		}
 
 		c.AgeDays = ageDays
-		c.MergedInto = mergedSet[b]
+		c.MergedInto = mergedSet[b.Name]
 
 		if mergedOnly {
 			if c.MergedInto {
