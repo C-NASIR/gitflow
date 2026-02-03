@@ -176,3 +176,86 @@ func (g *GitHub) CreatePR(ctx context.Context, opts CreatePROptions) (*types.Pul
 
 	return pr, nil
 }
+
+func (g *GitHub) GetPR(ctx context.Context, number int) (*types.PullRequest, error) {
+	var gh struct {
+		Number  int    `json:"number"`
+		Title   string `json:"title"`
+		Body    string `json:"body"`
+		State   string `json:"state"`
+		HTMLURL string `json:"html_url"`
+		Draft   bool   `json:"draft"`
+		User    struct {
+			Login string `json:"login"`
+		} `json:"user"`
+		Head struct {
+			Ref string `json:"ref"`
+		} `json:"head"`
+		Base struct {
+			Ref string `json:"ref"`
+		} `json:"base"`
+	}
+
+	_, err := g.do(ctx, http.MethodGet, fmt.Sprintf("/pulls/%d", number), nil, &gh)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.PullRequest{
+		Number:      gh.Number,
+		Title:       gh.Title,
+		Description: gh.Body,
+		State:       gh.State,
+		Author:      gh.User.Login,
+		HeadBranch:  gh.Head.Ref,
+		BaseBranch:  gh.Base.Ref,
+		URL:         gh.HTMLURL,
+		Draft:       gh.Draft,
+	}, nil
+}
+
+func (g *GitHub) ListPRs(ctx context.Context, state string) ([]*types.PullRequest, error) {
+	if state == "" {
+		state = "open"
+	}
+
+	path := fmt.Sprintf("/pulls?state=%s", state)
+
+	var gh []struct {
+		Number  int    `json:"number"`
+		Title   string `json:"title"`
+		State   string `json:"state"`
+		HTMLURL string `json:"html_url"`
+		Draft   bool   `json:"draft"`
+		User    struct {
+			Login string `json:"login"`
+		} `json:"user"`
+		Head struct {
+			Ref string `json:"ref"`
+		} `json:"head"`
+		Base struct {
+			Ref string `json:"ref"`
+		} `json:"base"`
+	}
+
+	_, err := g.do(ctx, http.MethodGet, path, nil, &gh)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]*types.PullRequest, 0, len(gh))
+	for _, pr := range gh {
+		out = append(out, &types.PullRequest{
+			Number:     pr.Number,
+			Title:      pr.Title,
+			State:      pr.State,
+			Author:     pr.User.Login,
+			HeadBranch: pr.Head.Ref,
+			BaseBranch: pr.Base.Ref,
+			URL:        pr.HTMLURL,
+			Draft:      pr.Draft,
+		})
+	}
+
+	return out, nil
+}

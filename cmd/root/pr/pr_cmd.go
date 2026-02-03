@@ -8,5 +8,7 @@ func Cmd() *cobra.Command {
 		Short: "Pull request workflows",
 	}
 	cmd.AddCommand(createCmd())
+	cmd.AddCommand(listCmd())
+	cmd.AddCommand(viewCmd())
 	return cmd
 }

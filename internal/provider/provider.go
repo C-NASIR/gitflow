@@ -12,6 +12,8 @@ type Provider interface {
 	ValidateAuth(ctx context.Context) error
 	GetDefaultBranch(ctx context.Context) (string, error)
 	CreatePR(ctx context.Context, opts CreatePROptions) (*types.PullRequest, error)
+	GetPR(ctx context.Context, number int) (*types.PullRequest, error)
+	ListPRs(ctx context.Context, state string) ([]*types.PullRequest, error)
 }
 
 type CreatePROptions struct {

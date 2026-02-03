@@ -5,6 +5,7 @@ type PullRequest struct {
 	Title       string
 	Description string
 	State       string
+	Author      string
 	HeadBranch  string
 	BaseBranch  string
 	URL         string
