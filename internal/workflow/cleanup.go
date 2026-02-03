@@ -1,55 +1,54 @@
 package workflow
 
 import (
-	"bufio"
 	"fmt"
-	"gitflow/internal/config"
-	"gitflow/internal/git"
-	"os"
 	"sort"
 	"strings"
+
+	"gitflow/internal/config"
+	"gitflow/internal/git"
 )
 
-// CleanupOptions defines inputs for pruning local and remote branches.
 type CleanupOptions struct {
-	RepoPath string
-	Remote   string
-
-	Yes bool
-
-	All            bool
-	AgeThreshold   int
-	DeleteRemote   bool
-	MergedOnlyHint *bool
+	RepoPath     string
+	Remote       string
+	Yes          bool
+	All          bool
+	AgeThreshold int
+	DeleteRemote bool
+	Selected     []string
 }
 
-// CleanupCandidate captures branch metadata used for cleanup decisions.
-type CleanupCandidate struct {
-	Name       string
-	AgeDays    int
-	MergedInto bool
-	WillDelete bool
-	RemoteAlso bool
-	Protected  bool
-	Reason     string
-}
-
-// CleanupResult summarizes cleanup decisions and actions.
 type CleanupResult struct {
 	BaseBranch    string
 	Current       string
-	Candidates    []CleanupCandidate
 	Deleted       []string
 	RemoteDeleted []string
+	Candidates    []CandidateBranch
 }
 
-// Cleanup determines stale branches and deletes them if confirmed.
+type CandidateBranch struct {
+	Name    string
+	Reason  string
+	AgeDays int
+	Ahead   int
+	Behind  int
+}
+
 func Cleanup(cfg *config.Config, opts CleanupOptions) (*CleanupResult, error) {
-	if opts.RepoPath == "" {
+	if strings.TrimSpace(opts.RepoPath) == "" {
 		return nil, fmt.Errorf("repo path is required")
 	}
 	if opts.Remote == "" {
 		opts.Remote = "origin"
+	}
+
+	base := strings.TrimSpace(cfg.Workflows.Start.BaseBranch)
+	if base == "" {
+		base = strings.TrimSpace(cfg.Branches.MainBranch)
+	}
+	if base == "" {
+		base = "main"
 	}
 
 	client, err := git.NewClient(opts.RepoPath)
@@ -57,136 +56,125 @@ func Cleanup(cfg *config.Config, opts CleanupOptions) (*CleanupResult, error) {
 		return nil, err
 	}
 
-	dirty, err := client.IsDirty()
-	if err != nil {
-		return nil, err
-	}
-	if dirty {
-		return nil, fmt.Errorf("working tree is not clean")
-	}
-
 	current, err := client.CurrentBranch()
 	if err != nil {
 		return nil, err
 	}
 
-	base := cfg.Workflows.Start.BaseBranch
-	if base == "" {
-		base = cfg.Branches.MainBranch
-	}
-	if base == "" {
-		base = "main"
-	}
-
-	remoteExists, err := client.HasRemote(opts.Remote)
-	if err != nil {
-		return nil, err
-	}
-	if !remoteExists {
-		return nil, fmt.Errorf("remote %s not found", opts.Remote)
+	protected := make(map[string]bool)
+	protected[base] = true
+	protected[current] = true
+	for _, p := range cfg.Workflows.Cleanup.ProtectedBranches {
+		v := strings.TrimSpace(p)
+		if v != "" {
+			protected[v] = true
+		}
 	}
 
 	ageThreshold := opts.AgeThreshold
 	if ageThreshold == 0 {
 		ageThreshold = cfg.Workflows.Cleanup.AgeThresholdDays
 	}
-	if ageThreshold == 0 {
-		ageThreshold = 30
+	if ageThreshold < 0 {
+		ageThreshold = 0
 	}
 
-	mergedOnly := cfg.Workflows.Cleanup.MergedOnly
-	if opts.MergedOnlyHint != nil {
-		mergedOnly = *opts.MergedOnlyHint
-	}
-	if opts.All {
-		mergedOnly = false
-	}
+	var candidates []CandidateBranch
 
-	protectedSet := map[string]bool{}
-	for _, b := range cfg.Workflows.Cleanup.ProtectedBranches {
-		protectedSet[b] = true
-	}
-	protectedSet[base] = true
-
-	mergedSet := map[string]bool{}
-	mergedBranches, err := client.MergedBranches(base)
-	if err != nil {
-		return nil, err
-	}
-	for _, b := range mergedBranches {
-		mergedSet[b] = true
-	}
-
-	localBranches, err := client.ListLocalBranches(base)
-	if err != nil {
-		return nil, err
-	}
-
-	var candidates []CleanupCandidate
-	for _, b := range localBranches {
-		c := CleanupCandidate{Name: b.Name}
-
-		if protectedSet[b.Name] {
-			c.Protected = true
-			c.Reason = "protected"
-			candidates = append(candidates, c)
-			continue
-		}
-		if b.Name == current {
-			c.Protected = true
-			c.Reason = "current"
-			candidates = append(candidates, c)
-			continue
-		}
-
-		ageDays, err := client.BranchAgeDays(b.Name)
+	if cfg.Workflows.Cleanup.MergedOnly && !opts.All {
+		merged, err := client.MergedBranches(base)
 		if err != nil {
-			c.Reason = "age check failed"
-			candidates = append(candidates, c)
-			continue
+			return nil, err
 		}
 
-		c.AgeDays = ageDays
-		c.MergedInto = mergedSet[b.Name]
-
-		if mergedOnly {
-			if c.MergedInto {
-				c.WillDelete = true
-				c.Reason = "merged"
-			} else {
-				c.Reason = "not merged"
+		for _, b := range merged {
+			if protected[b] {
+				continue
 			}
-		} else {
-			if c.MergedInto {
-				c.WillDelete = true
-				c.Reason = "merged"
-			} else if c.AgeDays >= ageThreshold {
-				c.WillDelete = true
-				c.Reason = "stale"
-			} else {
-				c.Reason = "recent"
+			age, _ := clientBranchAgeDays(client, b)
+			ahead, behind := clientAheadBehind(client, b, base)
+			candidates = append(candidates, CandidateBranch{
+				Name:    b,
+				Reason:  "merged",
+				AgeDays: age,
+				Ahead:   ahead,
+				Behind:  behind,
+			})
+		}
+	} else {
+		branches, err := client.ListLocalBranches(base)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, b := range branches {
+			if protected[b.Name] {
+				continue
 			}
-		}
+			if ageThreshold > 0 && b.AgeDays < ageThreshold {
+				continue
+			}
 
-		if c.WillDelete && opts.DeleteRemote {
-			c.RemoteAlso = true
-		}
+			reason := "stale"
+			if cfg.Workflows.Cleanup.MergedOnly {
+				mergedList, err := client.MergedBranches(base)
+				if err == nil {
+					for _, mb := range mergedList {
+						if mb == b.Name {
+							reason = "merged and stale"
+							break
+						}
+					}
+				}
+			}
 
-		candidates = append(candidates, c)
+			candidates = append(candidates, CandidateBranch{
+				Name:    b.Name,
+				Reason:  reason,
+				AgeDays: b.AgeDays,
+				Ahead:   b.Ahead,
+				Behind:  b.Behind,
+			})
+		}
 	}
 
 	sort.Slice(candidates, func(i, j int) bool {
+		if candidates[i].Reason != candidates[j].Reason {
+			return candidates[i].Reason < candidates[j].Reason
+		}
+		if candidates[i].AgeDays != candidates[j].AgeDays {
+			return candidates[i].AgeDays > candidates[j].AgeDays
+		}
 		return candidates[i].Name < candidates[j].Name
 	})
 
-	var plan []CleanupCandidate
-	for _, c := range candidates {
-		if c.WillDelete {
-			plan = append(plan, c)
-		}
+	if len(candidates) == 0 {
+		return &CleanupResult{
+			BaseBranch: base,
+			Current:    current,
+			Candidates: nil,
+		}, nil
 	}
 
-	if len(plan) == 0 {
+	var toDelete []string
+	if opts.Yes {
+		allow := make(map[string]bool)
+		if len(opts.Selected) > 0 {
+			for _, s := range opts.Selected {
+				s = strings.TrimSpace(s)
+				if s != "" {
+					allow[s] = true
+				}
+			}
+		}
+
+		for _, c := range candidates {
+			if len(allow) > 0 && !allow[c.Name] {
+				continue
+			}
+			toDelete = append(toDelete, c.Name)
+		}
+	} else {
 		return &CleanupResult{
 			BaseBranch: base,
 			Current:    current,
@@ -194,66 +182,74 @@ func Cleanup(cfg *config.Config, opts CleanupOptions) (*CleanupResult, error) {
 		}, nil
 	}
 
-	if !opts.Yes {
-		ok, err := confirmCleanup(plan, opts.DeleteRemote)
-		if err != nil {
+	var deleted []string
+	for _, b := range toDelete {
+		if err := client.DeleteBranch(b, false); err != nil {
 			return nil, err
 		}
-		if !ok {
-			return &CleanupResult{
-				BaseBranch: base,
-				Current:    current,
-				Candidates: candidates,
-			}, nil
-		}
+		deleted = append(deleted, b)
 	}
 
-	var deleted []string
 	var remoteDeleted []string
-
-	for _, c := range plan {
-		if err := client.DeleteBranch(c.Name, false); err != nil {
-			return nil, err
-		}
-		deleted = append(deleted, c.Name)
-
-		if c.RemoteAlso {
-			if err := client.DeleteRemoteBranch(opts.Remote, c.Name); err != nil {
+	if opts.DeleteRemote {
+		for _, b := range deleted {
+			if err := client.DeleteRemoteBranch(opts.Remote, b); err != nil {
 				return nil, err
 			}
-			remoteDeleted = append(remoteDeleted, c.Name)
+			remoteDeleted = append(remoteDeleted, b)
 		}
 	}
 
 	return &CleanupResult{
 		BaseBranch:    base,
 		Current:       current,
-		Candidates:    candidates,
 		Deleted:       deleted,
 		RemoteDeleted: remoteDeleted,
+		Candidates:    candidates,
 	}, nil
-
 }
 
-func confirmCleanup(plan []CleanupCandidate, deleteRemote bool) (bool, error) {
-	fmt.Println()
-	fmt.Println("Branches to delete")
-	for _, c := range plan {
-		line := fmt.Sprintf(" %s reason=%s age=%dd", c.Name, c.Reason, c.AgeDays)
-		if deleteRemote {
-			line += " remote=yes"
-		}
-		fmt.Println(line)
-	}
-	fmt.Println()
-	fmt.Print("Proceed, type yes to confirm: ")
-
-	reader := bufio.NewReader(os.Stdin)
-	text, err := reader.ReadString('\n')
+func clientBranchAgeDays(c *git.Client, branch string) (int, error) {
+	out, err := c.Run("log", "-1", "--format=%ct", branch)
 	if err != nil {
-		return false, err
+		return 0, err
 	}
-	text = strings.ToLower(strings.TrimSpace(text))
-	return text == "yes", nil
 
+	sec, err := parseInt64(strings.TrimSpace(out))
+	if err != nil {
+		return 0, err
+	}
+	ageDays := int(secondsSince(sec) / 86400)
+	if ageDays < 0 {
+		ageDays = 0
+	}
+	return ageDays, nil
+}
+
+func clientAheadBehind(c *git.Client, branch string, base string) (int, int) {
+	a, b, err := cAheadBehind(c, branch, base)
+	if err != nil {
+		return 0, 0
+	}
+	return a, b
+}
+
+func cAheadBehind(c *git.Client, branch string, base string) (int, int, error) {
+	out, err := c.Run("rev-list", "--left-right", "--count", fmt.Sprintf("%s...%s", base, branch))
+	if err != nil {
+		return 0, 0, err
+	}
+	fields := strings.Fields(strings.TrimSpace(out))
+	if len(fields) != 2 {
+		return 0, 0, fmt.Errorf("unexpected rev-list output: %q", out)
+	}
+	behind, err := parseInt(fields[0])
+	if err != nil {
+		return 0, 0, err
+	}
+	ahead, err := parseInt(fields[1])
+	if err != nil {
+		return 0, 0, err
+	}
+	return ahead, behind, nil
 }

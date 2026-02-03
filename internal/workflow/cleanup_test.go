@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -45,6 +46,31 @@ func setupRepoForCleanup(t *testing.T) string {
 	runGitCleanup(t, work, nil, "push", "-u", "origin", "main")
 
 	return work
+}
+
+func defaultBranch(t *testing.T, repo string) string {
+	t.Helper()
+
+	cmd := exec.Command("git", "branch", "--show-current")
+	cmd.Dir = repo
+	out, err := cmd.CombinedOutput()
+	if err == nil {
+		b := strings.TrimSpace(string(out))
+		if b != "" {
+			return b
+		}
+	}
+
+	for _, candidate := range []string{"main", "master"} {
+		cmd := exec.Command("git", "rev-parse", "--verify", candidate)
+		cmd.Dir = repo
+		if err := cmd.Run(); err == nil {
+			return candidate
+		}
+	}
+
+	t.Fatalf("could not determine default branch")
+	return ""
 }
 
 func TestCleanupDeletesMergedBranch(t *testing.T) {
@@ -136,5 +162,70 @@ func TestCleanupDoesNotDeleteProtectedOrCurrent(t *testing.T) {
 		if b == "main" || b == "feature/keep" {
 			t.Fatalf("deleted protected branch %s", b)
 		}
+	}
+}
+
+func TestCleanupSelectedDeletesOnlySelected(t *testing.T) {
+	repo := setupCommitRepo(t)
+
+	runGitCommitTest(t, repo, "checkout", "-b", "feature/a")
+	if err := os.WriteFile(filepath.Join(repo, "a.txt"), []byte("a2"), 0644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	runGitCommitTest(t, repo, "add", "-A")
+	runGitCommitTest(t, repo, "commit", "-m", "a")
+
+	runGitCommitTest(t, repo, "checkout", "-b", "feature/b")
+	if err := os.WriteFile(filepath.Join(repo, "b.txt"), []byte("b"), 0644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	runGitCommitTest(t, repo, "add", "-A")
+	runGitCommitTest(t, repo, "commit", "-m", "b")
+
+	base := defaultBranch(t, repo)
+
+	runGitCommitTest(t, repo, "checkout", base)
+
+	cfg := config.Default()
+	cfg.Workflows.Start.BaseBranch = base
+	cfg.Workflows.Cleanup.MergedOnly = false
+	cfg.Workflows.Cleanup.AgeThresholdDays = 0
+	cfg.Workflows.Cleanup.ProtectedBranches = []string{base}
+
+	out, err := Cleanup(cfg, CleanupOptions{
+		RepoPath: repo,
+		Yes:      false,
+		All:      true,
+		Selected: nil,
+	})
+	if err != nil {
+		t.Fatalf("Cleanup preview: %v", err)
+	}
+	if len(out.Candidates) == 0 {
+		t.Fatalf("expected candidates")
+	}
+
+	out2, err := Cleanup(cfg, CleanupOptions{
+		RepoPath: repo,
+		Yes:      true,
+		All:      true,
+		Selected: []string{"feature/a"},
+	})
+	if err != nil {
+		t.Fatalf("Cleanup delete: %v", err)
+	}
+
+	if len(out2.Deleted) != 1 || out2.Deleted[0] != "feature/a" {
+		t.Fatalf("expected only feature/a deleted")
+	}
+
+	client, _ := git.NewClient(repo)
+	existsA, _ := client.BranchExists("feature/a")
+	existsB, _ := client.BranchExists("feature/b")
+	if existsA {
+		t.Fatalf("feature/a should be deleted")
+	}
+	if !existsB {
+		t.Fatalf("feature/b should remain")
 	}
 }

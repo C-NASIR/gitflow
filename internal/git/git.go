@@ -243,3 +243,11 @@ func (c *Client) RunWithInput(input string, args ...string) (string, error) {
 
 	return strings.TrimSpace(stdout.String()), nil
 }
+
+func (c *Client) BranchExists(branch string) (bool, error) {
+	_, err := c.Run("rev-parse", "--verify", branch)
+	if err != nil {
+		return false, nil
+	}
+	return true, nil
+}
