@@ -8,5 +8,6 @@ func configCmd() *cobra.Command {
 		Short: "Work with gitflow configuration",
 	}
 	cmd.AddCommand(configShowCmd())
+	cmd.AddCommand(configValidateCmd())
 	return cmd
 }
