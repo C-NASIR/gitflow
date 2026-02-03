@@ -34,6 +34,12 @@ func Default() *Config {
 				},
 			},
 		},
+		Commits: CommitConfig{
+			Conventional: false,
+			Types:        []string{"feat", "fix", "docs", "refactor", "test", "chore"},
+			Scopes:       nil,
+			RequireScope: false,
+		},
 		UI: UIConfig{
 			Color:   true,
 			Emoji:   false,

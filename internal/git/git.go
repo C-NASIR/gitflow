@@ -221,3 +221,42 @@ func (c *Client) HasUpstream() (bool, error) {
 	}
 	return true, nil
 }
+
+func (c *Client) AddAll() error {
+	_, err := c.Run("add", "-A")
+	return err
+}
+
+func (c *Client) HasStagedChanges() (bool, error) {
+	out, err := c.Run("diff", "--cached", "--name-only")
+	if err != nil {
+		return false, err
+	}
+	return strings.TrimSpace(out) != "", nil
+}
+
+func (c *Client) CommitMessage(message string) error {
+	_, err := c.RunWithInput(message, "commit", "-F", "-")
+	return err
+}
+
+func (c *Client) RunWithInput(input string, args ...string) (string, error) {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = c.repoPath
+	cmd.Stdin = strings.NewReader(input)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf(
+			"git %s failed: %w\n%s",
+			strings.Join(args, " "),
+			err,
+			stderr.String(),
+		)
+	}
+
+	return strings.TrimSpace(stdout.String()), nil
+}

@@ -13,6 +13,7 @@ type Config struct {
 	Provider  ProviderConfig `yaml:"provider"`
 	Branches  BranchConfig   `yaml:"branches"`
 	Workflows WorkflowConfig `yaml:"workflows"`
+	Commits   CommitConfig   `yaml:"commits"`
 	UI        UIConfig       `yaml:"ui"`
 }
 
@@ -74,6 +75,13 @@ type UIConfig struct {
 	Color   bool `yaml:"color"`
 	Emoji   bool `yaml:"emoji"`
 	Verbose bool `yaml:"verbose"`
+}
+
+type CommitConfig struct {
+	Conventional bool     `yaml:"conventional"`
+	Types        []string `yaml:"types"`
+	Scopes       []string `yaml:"scopes"`
+	RequireScope bool     `yaml:"require_scope"`
 }
 
 // LoadResult captures the config and its source path.

@@ -22,3 +22,9 @@ workflows:
       - bob
     labels:
       - needs-review
+
+commits:
+  conventional: true
+  require_scope: false
+  types: [feat, fix, docs, refactor, test, chore]
+  scopes: [auth, api, ui]

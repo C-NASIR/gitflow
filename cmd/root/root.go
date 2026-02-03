@@ -31,6 +31,7 @@ func Execute() {
 	rootCmd.AddCommand(startCmd())
 	rootCmd.AddCommand(syncCmd())
 	rootCmd.AddCommand(cleanupCmd())
+	rootCmd.AddCommand(commitCmd())
 	rootCmd.AddCommand(provider.Cmd())
 	rootCmd.AddCommand(pr.Cmd())
 
