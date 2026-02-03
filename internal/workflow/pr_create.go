@@ -152,5 +152,17 @@ func defaultTitleFromBranch(branch string) string {
 	if b == "" {
 		return "Update"
 	}
-	return strings.Title(b)
+	return titleCaseWords(b)
+}
+
+func titleCaseWords(s string) string {
+	parts := strings.Fields(s)
+	for i := range parts {
+		p := parts[i]
+		if len(p) == 0 {
+			continue
+		}
+		parts[i] = strings.ToUpper(p[:1]) + p[1:]
+	}
+	return strings.Join(parts, " ")
 }

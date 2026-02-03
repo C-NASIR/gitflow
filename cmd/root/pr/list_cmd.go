@@ -36,8 +36,9 @@ func listCmd() *cobra.Command {
 				if pr.Draft {
 					draftText = " draft"
 				}
-				cmd.Printf("#%d %s  %s  %s%s\n", pr.Number, pr.State, pr.Author, pr.Title, draftText)
-				cmd.Printf("%s\n", pr.URL)
+				cmd.Printf("#%d %s %s %s%s\n", pr.Number, pr.State, pr.Author, pr.Title, draftText)
+				cmd.Printf("  head %s  base %s\n", pr.HeadBranch, pr.BaseBranch)
+				cmd.Printf("  %s\n", pr.URL)
 				cmd.Println()
 			}
 

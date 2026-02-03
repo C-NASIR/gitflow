@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"gitflow/internal/config"
+	"gitflow/internal/ui"
 	"gitflow/internal/workflow"
 )
 
@@ -20,6 +21,8 @@ func createCmd() *cobra.Command {
 	var reviewers string
 	var labels string
 	var remote string
+	var interactive bool
+	var open bool
 
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -35,10 +38,54 @@ func createCmd() *cobra.Command {
 				return err
 			}
 
+			useInteractive := interactive
+			if !useInteractive {
+				if strings.TrimSpace(title) == "" && strings.TrimSpace(body) == "" && !draftSet && strings.TrimSpace(reviewers) == "" && strings.TrimSpace(labels) == "" && strings.TrimSpace(base) == "" {
+					useInteractive = true
+				}
+			}
+
 			var draftPtr *bool
 			if draftSet {
 				v := draft
 				draftPtr = &v
+			}
+
+			if useInteractive {
+				def := ui.PRPromptInput{
+					Title:       title,
+					Description: body,
+					Draft:       res.Config.Workflows.PR.Draft,
+					Reviewers:   strings.Join(res.Config.Workflows.PR.DefaultReviewers, ","),
+					Labels:      strings.Join(res.Config.Workflows.PR.Labels, ","),
+					BaseBranch:  base,
+					OpenBrowser: open,
+				}
+				if draftSet {
+					def.Draft = draft
+				}
+				if strings.TrimSpace(reviewers) != "" {
+					def.Reviewers = reviewers
+				}
+				if strings.TrimSpace(labels) != "" {
+					def.Labels = labels
+				}
+
+				in, err := ui.PromptPR(def)
+				if err != nil {
+					return err
+				}
+
+				title = in.Title
+				body = in.Description
+				base = in.BaseBranch
+				open = in.OpenBrowser
+
+				v := in.Draft
+				draftPtr = &v
+
+				reviewers = in.Reviewers
+				labels = in.Labels
 			}
 
 			out, err := workflow.CreatePR(res.Config, workflow.PRCreateOptions{
@@ -59,6 +106,11 @@ func createCmd() *cobra.Command {
 			cmd.Printf("PR created: #%d\n", pr.Number)
 			cmd.Printf("Title: %s\n", pr.Title)
 			cmd.Printf("URL: %s\n", pr.URL)
+
+			if open {
+				_ = ui.OpenURL(pr.URL)
+			}
+
 			return nil
 		},
 	}
@@ -69,6 +121,8 @@ func createCmd() *cobra.Command {
 	cmd.Flags().StringVar(&remote, "remote", "origin", "Remote name")
 	cmd.Flags().StringVar(&reviewers, "reviewers", "", "Comma separated reviewers")
 	cmd.Flags().StringVar(&labels, "labels", "", "Comma separated labels")
+	cmd.Flags().BoolVar(&interactive, "interactive", false, "Prompt for missing fields")
+	cmd.Flags().BoolVar(&open, "open", false, "Open PR in browser after creation")
 	cmd.Flags().BoolVar(&draft, "draft", false, "Create as draft PR")
 
 	cmd.Flags().Lookup("draft").NoOptDefVal = "true"
