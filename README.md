@@ -2,7 +2,7 @@
 
 Gitflow is a professional command line tool that turns everyday Git workflows into single intentional commands.
 
-This project exists to remove friction from daily development work while teaching how to build a real production quality CLI in Go.
+Remove friction from your daily development work.
 
 ---
 
