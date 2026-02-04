@@ -36,6 +36,10 @@ func (t *Table) Row(cols ...any) {
 	}
 }
 
+func (t *Table) KeyValue(key string, value any) {
+	t.Row(key, value)
+}
+
 func (t *Table) Flush() {
 	_ = t.w.Flush()
 }

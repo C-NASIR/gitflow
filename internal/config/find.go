@@ -10,25 +10,35 @@ import (
 )
 
 func findConfig(startDir string) (string, error) {
-	if p := filepath.Join(startDir, ".gitflow.yaml"); fileExists(p) {
+	if p, ok := findConfigInDir(startDir); ok {
 		return p, nil
 	}
 
 	gitRoot, err := gitTopLevel(startDir)
 	if err == nil {
-		if p := filepath.Join(gitRoot, ".gitflow.yaml"); fileExists(p) {
+		if p, ok := findConfigInDir(gitRoot); ok {
 			return p, nil
 		}
 	}
 
 	home, err := os.UserHomeDir()
 	if err == nil {
-		if p := filepath.Join(home, ".gitflow.yaml"); fileExists(p) {
+		if p, ok := findConfigInDir(home); ok {
 			return p, nil
 		}
 	}
 
 	return "", fmt.Errorf("no config file found")
+}
+
+func findConfigInDir(dir string) (string, bool) {
+	if p := filepath.Join(dir, ".gitflow.yml"); fileExists(p) {
+		return p, true
+	}
+	if p := filepath.Join(dir, ".gitflow.yaml"); fileExists(p) {
+		return p, true
+	}
+	return "", false
 }
 
 func fileExists(path string) bool {

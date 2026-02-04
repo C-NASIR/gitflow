@@ -102,3 +102,28 @@ func (u *UI) Verbose(format string, args ...any) {
 	}
 	u.Info(format, args...)
 }
+
+func (u *UI) StatusLabel(level string) string {
+	switch level {
+	case "OK":
+		return u.okStyle.Sprint(level)
+	case "WARN":
+		return u.warnStyle.Sprint(level)
+	case "ERROR":
+		return u.errStyle.Sprint(level)
+	default:
+		return level
+	}
+}
+
+func (u *UI) ColorEnabled() bool {
+	return u.useColor
+}
+
+func (u *UI) EmojiEnabled() bool {
+	return u.useEmoji
+}
+
+func (u *UI) VerboseEnabled() bool {
+	return u.verbose
+}

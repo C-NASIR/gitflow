@@ -6,11 +6,14 @@ import (
 )
 
 func PrintConfigSource(u *ui.UI, path string) {
+	u.Line("Config source: %s", ConfigSource(path))
+}
+
+func ConfigSource(path string) string {
 	if path == "" {
-		u.Line("Config source: defaults")
-		return
+		return "defaults"
 	}
-	u.Line("Config source: %s", path)
+	return path
 }
 
 func EnsureOneKind(bugfix bool, hotfix bool) error {

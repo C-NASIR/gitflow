@@ -2,18 +2,19 @@ package root
 
 import (
 	"fmt"
+	"os"
+
 	"gitflow/internal/cli"
 	"gitflow/internal/ui"
 	"gitflow/internal/workflow"
-	"os"
 
 	"github.com/spf13/cobra"
 )
 
-func statusCmd() *cobra.Command {
+func doctorCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "status",
-		Short: "Show repository status summary",
+		Use:   "doctor",
+		Short: "Check repository health",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := cli.CommonFromCmd(cmd)
 			if err != nil {
@@ -25,22 +26,29 @@ func statusCmd() *cobra.Command {
 				return fmt.Errorf("failed to get current directory: %w", err)
 			}
 
-			s, err := workflow.GetStatus(repoPath)
+			out, err := workflow.Doctor(repoPath)
 			if err != nil {
 				return err
 			}
 
-			c.UI.Header("Repository status")
-			workingTree := "clean"
-			if s.Dirty {
-				workingTree = "dirty"
-			}
+			c.UI.Header("Doctor report")
+
 			t := ui.NewTable(cmd.OutOrStdout())
-			t.Header("KEY", "VALUE")
-			t.KeyValue("Branch", s.Branch)
-			t.KeyValue("Working tree", workingTree)
-			t.KeyValue("Config source", cli.ConfigSource(c.ConfigResult.Path))
+			t.Header("STATUS", "CHECK", "MESSAGE")
+
+			hasErrors := false
+			for _, check := range out.Checks {
+				if check.Level == workflow.DoctorError {
+					hasErrors = true
+				}
+				status := c.UI.StatusLabel(check.Level)
+				t.Row(status, check.Name, check.Message)
+			}
 			t.Flush()
+
+			if hasErrors {
+				return fmt.Errorf("doctor found errors")
+			}
 
 			return nil
 		},
