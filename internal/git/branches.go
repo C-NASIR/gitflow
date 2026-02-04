@@ -9,6 +9,7 @@ import (
 	"gitflow/pkg/types"
 )
 
+// ListLocalBranches returns local branches with summary metadata.
 func (c *Client) ListLocalBranches(baseBranch string) ([]*types.Branch, error) {
 	current, err := c.CurrentBranch()
 	if err != nil {

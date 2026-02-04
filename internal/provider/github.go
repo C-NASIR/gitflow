@@ -112,6 +112,7 @@ func (g *GitHub) do(ctx context.Context, method string, path string, body any, o
 	return resp, nil
 }
 
+// CreatePR creates a pull request on GitHub.
 func (g *GitHub) CreatePR(ctx context.Context, opts CreatePROptions) (*types.PullRequest, error) {
 	reqBody := map[string]any{
 		"title": opts.Title,
@@ -177,6 +178,7 @@ func (g *GitHub) CreatePR(ctx context.Context, opts CreatePROptions) (*types.Pul
 	return pr, nil
 }
 
+// GetPR retrieves a pull request by number.
 func (g *GitHub) GetPR(ctx context.Context, number int) (*types.PullRequest, error) {
 	var gh struct {
 		Number  int    `json:"number"`
@@ -214,6 +216,7 @@ func (g *GitHub) GetPR(ctx context.Context, number int) (*types.PullRequest, err
 	}, nil
 }
 
+// ListPRs lists pull requests in the provided state.
 func (g *GitHub) ListPRs(ctx context.Context, state string) ([]*types.PullRequest, error) {
 	if state == "" {
 		state = "open"
@@ -260,6 +263,7 @@ func (g *GitHub) ListPRs(ctx context.Context, state string) ([]*types.PullReques
 	return out, nil
 }
 
+// CreateRelease creates a release for a tag.
 func (g *GitHub) CreateRelease(tag string, name string, body string) (*types.Release, error) {
 	reqBody := map[string]any{
 		"tag_name": tag,
@@ -288,6 +292,7 @@ func (g *GitHub) CreateRelease(tag string, name string, body string) (*types.Rel
 	}, nil
 }
 
+// UpdateRelease updates an existing release.
 func (g *GitHub) UpdateRelease(tag string, name string, body string) (*types.Release, error) {
 	var existing struct {
 		ID      int    `json:"id"`

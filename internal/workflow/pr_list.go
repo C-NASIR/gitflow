@@ -11,14 +11,17 @@ import (
 	"gitflow/pkg/types"
 )
 
+// PRListOptions defines inputs for listing PRs.
 type PRListOptions struct {
 	State string
 }
 
+// PRListResult contains pull request list results.
 type PRListResult struct {
 	PRs []*types.PullRequest
 }
 
+// ListPRs lists pull requests using the configured provider.
 func ListPRs(cfg *config.Config, opts PRListOptions) (*PRListResult, error) {
 	if !provider.Enabled(cfg) {
 		return nil, fmt.Errorf("provider is not configured in .gitflow.yml")

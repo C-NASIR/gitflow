@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// WriteFile writes a config file to disk.
 func WriteFile(path string, cfg *Config) error {
 	data, err := yaml.Marshal(cfg)
 	if err != nil {

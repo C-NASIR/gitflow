@@ -1,5 +1,7 @@
+// Package types defines shared API models for gitflow.
 package types
 
+// PullRequest describes a hosted pull request.
 type PullRequest struct {
 	Number      int
 	Title       string
@@ -15,6 +17,7 @@ type PullRequest struct {
 	Labels    []string
 }
 
+// Branch represents a local branch summary.
 type Branch struct {
 	Name          string
 	Current       bool
@@ -27,6 +30,7 @@ type Branch struct {
 	Behind int
 }
 
+// Release represents a published release.
 type Release struct {
 	Tag  string
 	Name string

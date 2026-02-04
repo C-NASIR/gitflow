@@ -7,6 +7,7 @@ import (
 	"gitflow/internal/provider"
 )
 
+// ReleasePublishOptions defines inputs for publishing a release.
 type ReleasePublishOptions struct {
 	RepoPath     string
 	DryRun       bool
@@ -14,12 +15,14 @@ type ReleasePublishOptions struct {
 	Result       *ReleaseResult
 }
 
+// ReleasePublishResult reports provider release output.
 type ReleasePublishResult struct {
 	Provider string
 	URL      string
 	DryRun   bool
 }
 
+// ReleasePublish creates or updates a release in the provider.
 func ReleasePublish(opts ReleasePublishOptions) (*ReleasePublishResult, error) {
 	if opts.RepoPath == "" {
 		return nil, fmt.Errorf("repo path is required")

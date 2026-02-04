@@ -197,6 +197,7 @@ func (c *Client) DeleteRemoteBranch(remote, branch string) error {
 	return err
 }
 
+// HasUpstream reports whether the current branch has an upstream configured.
 func (c *Client) HasUpstream() (bool, error) {
 	_, err := c.Run("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}")
 	if err != nil {
@@ -205,11 +206,13 @@ func (c *Client) HasUpstream() (bool, error) {
 	return true, nil
 }
 
+// AddAll stages all tracked and untracked changes.
 func (c *Client) AddAll() error {
 	_, err := c.Run("add", "-A")
 	return err
 }
 
+// HasStagedChanges reports whether there are staged changes.
 func (c *Client) HasStagedChanges() (bool, error) {
 	out, err := c.Run("diff", "--cached", "--name-only")
 	if err != nil {
@@ -218,11 +221,13 @@ func (c *Client) HasStagedChanges() (bool, error) {
 	return strings.TrimSpace(out) != "", nil
 }
 
+// CommitMessage creates a commit with the provided message text.
 func (c *Client) CommitMessage(message string) error {
 	_, err := c.RunWithInput(message, "commit", "-F", "-")
 	return err
 }
 
+// RunWithInput executes a git command with stdin input.
 func (c *Client) RunWithInput(input string, args ...string) (string, error) {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = c.repoPath
@@ -244,6 +249,7 @@ func (c *Client) RunWithInput(input string, args ...string) (string, error) {
 	return strings.TrimSpace(stdout.String()), nil
 }
 
+// BranchExists reports whether a local branch exists.
 func (c *Client) BranchExists(branch string) (bool, error) {
 	_, err := c.Run("rev-parse", "--verify", branch)
 	if err != nil {

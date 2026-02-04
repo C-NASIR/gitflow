@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// ApplyEnvOverrides overrides config values from environment variables.
 func ApplyEnvOverrides(cfg *Config) error {
 	if cfg == nil {
 		return fmt.Errorf("config is nil")

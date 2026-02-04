@@ -18,6 +18,7 @@ type Provider interface {
 	UpdateRelease(tag string, name string, body string) (*types.Release, error)
 }
 
+// CreatePROptions defines pull request creation inputs.
 type CreatePROptions struct {
 	Title       string
 	Description string
@@ -28,6 +29,7 @@ type CreatePROptions struct {
 	Labels      []string
 }
 
+// ProviderConfig contains provider connection settings.
 type ProviderConfig struct {
 	Type    string
 	BaseURL string

@@ -1,3 +1,4 @@
+// Package ui provides CLI presentation helpers.
 package ui
 
 import (
@@ -7,6 +8,7 @@ import (
 	"github.com/fatih/color"
 )
 
+// UI renders styled output to a writer.
 type UI struct {
 	out      io.Writer
 	useColor bool
@@ -25,6 +27,7 @@ type UI struct {
 	headStyle *color.Color
 }
 
+// Options configures a UI instance.
 type Options struct {
 	Out     io.Writer
 	Color   bool
@@ -32,6 +35,7 @@ type Options struct {
 	Verbose bool
 }
 
+// New constructs a new UI using the supplied options.
 func New(opts Options) *UI {
 	u := &UI{
 		out:      opts.Out,
@@ -70,32 +74,39 @@ func New(opts Options) *UI {
 
 }
 
+// Header prints a formatted section header.
 func (u *UI) Header(text string) {
 	fmt.Fprintln(u.out)
 	u.headStyle.Fprintln(u.out, text)
 	fmt.Fprintln(u.out)
 }
 
+// Line writes a formatted line to output.
 func (u *UI) Line(format string, args ...any) {
 	fmt.Fprintf(u.out, format+"\n", args...)
 }
 
+// Success writes a success message.
 func (u *UI) Success(format string, args ...any) {
 	u.okStyle.Fprintf(u.out, u.okPrefix+format+"\n", args...)
 }
 
+// Warn writes a warning message.
 func (u *UI) Warn(format string, args ...any) {
 	u.warnStyle.Fprintf(u.out, u.warnPrefix+format+"\n", args...)
 }
 
+// Error writes an error message.
 func (u *UI) Error(format string, args ...any) {
 	u.errStyle.Fprintf(u.out, u.errPrefix+format+"\n", args...)
 }
 
+// Info writes an informational message.
 func (u *UI) Info(format string, args ...any) {
 	u.infoStyle.Fprintf(u.out, u.infoPrefix+format+"\n", args...)
 }
 
+// Verbose writes a message only when verbose output is enabled.
 func (u *UI) Verbose(format string, args ...any) {
 	if !u.verbose {
 		return
@@ -103,6 +114,7 @@ func (u *UI) Verbose(format string, args ...any) {
 	u.Info(format, args...)
 }
 
+// StatusLabel formats a status label string.
 func (u *UI) StatusLabel(level string) string {
 	switch level {
 	case "OK":
@@ -116,14 +128,17 @@ func (u *UI) StatusLabel(level string) string {
 	}
 }
 
+// ColorEnabled reports whether color output is enabled.
 func (u *UI) ColorEnabled() bool {
 	return u.useColor
 }
 
+// EmojiEnabled reports whether emoji output is enabled.
 func (u *UI) EmojiEnabled() bool {
 	return u.useEmoji
 }
 
+// VerboseEnabled reports whether verbose output is enabled.
 func (u *UI) VerboseEnabled() bool {
 	return u.verbose
 }

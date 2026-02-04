@@ -13,6 +13,7 @@ import (
 	"time"
 )
 
+// GitLab implements provider access for the GitLab API.
 type GitLab struct {
 	baseURL string
 	token   string
@@ -20,6 +21,7 @@ type GitLab struct {
 	client  *http.Client
 }
 
+// NewGitLab builds a GitLab provider with the supplied configuration.
 func NewGitLab(cfg ProviderConfig) (*GitLab, error) {
 	baseURL := cfg.BaseURL
 	if strings.TrimSpace(baseURL) == "" {
@@ -44,11 +46,13 @@ func NewGitLab(cfg ProviderConfig) (*GitLab, error) {
 	}, nil
 }
 
+// ValidateAuth verifies the token with a basic API request.
 func (g *GitLab) ValidateAuth(ctx context.Context) error {
 	_, err := g.do(ctx, http.MethodGet, "", nil, nil)
 	return err
 }
 
+// GetDefaultBranch fetches the repo's default branch.
 func (g *GitLab) GetDefaultBranch(ctx context.Context) (string, error) {
 	var resp struct {
 		DefaultBranch string `json:"default_branch"`
@@ -63,18 +67,22 @@ func (g *GitLab) GetDefaultBranch(ctx context.Context) (string, error) {
 	return resp.DefaultBranch, nil
 }
 
+// CreatePR returns an error because GitLab PRs are not implemented.
 func (g *GitLab) CreatePR(ctx context.Context, opts CreatePROptions) (*types.PullRequest, error) {
 	return nil, fmt.Errorf("gitlab pull requests not implemented")
 }
 
+// GetPR returns an error because GitLab PRs are not implemented.
 func (g *GitLab) GetPR(ctx context.Context, number int) (*types.PullRequest, error) {
 	return nil, fmt.Errorf("gitlab pull requests not implemented")
 }
 
+// ListPRs returns an error because GitLab PRs are not implemented.
 func (g *GitLab) ListPRs(ctx context.Context, state string) ([]*types.PullRequest, error) {
 	return nil, fmt.Errorf("gitlab pull requests not implemented")
 }
 
+// CreateRelease creates a GitLab release for a tag.
 func (g *GitLab) CreateRelease(tag string, name string, body string) (*types.Release, error) {
 	reqBody := map[string]any{
 		"tag_name":    tag,
@@ -105,6 +113,7 @@ func (g *GitLab) CreateRelease(tag string, name string, body string) (*types.Rel
 	}, nil
 }
 
+// UpdateRelease updates an existing GitLab release.
 func (g *GitLab) UpdateRelease(tag string, name string, body string) (*types.Release, error) {
 	reqBody := map[string]any{
 		"name":        name,

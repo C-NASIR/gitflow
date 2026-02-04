@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Commit represents git commit metadata used in releases.
 type Commit struct {
 	Hash    string
 	Subject string
@@ -14,6 +15,7 @@ type Commit struct {
 	Date    string
 }
 
+// ListTags returns all tags in the repository.
 func (c *Client) ListTags() ([]string, error) {
 	out, err := c.Run("tag", "--list")
 	if err != nil {
@@ -34,6 +36,7 @@ func (c *Client) ListTags() ([]string, error) {
 	return tags, nil
 }
 
+// CommitsBetween returns commits between two refs.
 func (c *Client) CommitsBetween(fromRef, toRef string) ([]Commit, error) {
 	format := "%H%x1f%s%x1f%b%x1f%cs%x1e"
 	args := []string{"log", "--pretty=format:" + format}
@@ -73,6 +76,7 @@ func (c *Client) CommitsBetween(fromRef, toRef string) ([]Commit, error) {
 	return commits, nil
 }
 
+// TagExists reports whether a tag is present.
 func (c *Client) TagExists(tag string) (bool, error) {
 	cmd := exec.Command("git", "show-ref", "--tags", "--verify", "--quiet", "refs/tags/"+tag)
 	cmd.Dir = c.repoPath
@@ -85,6 +89,7 @@ func (c *Client) TagExists(tag string) (bool, error) {
 	return true, nil
 }
 
+// CreateAnnotatedTag creates an annotated tag with a message.
 func (c *Client) CreateAnnotatedTag(tag, message string) error {
 	exists, err := c.TagExists(tag)
 	if err != nil {

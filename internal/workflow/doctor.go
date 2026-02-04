@@ -10,21 +10,27 @@ import (
 )
 
 const (
+	// DoctorOK indicates a successful check.
 	DoctorOK    = "OK"
+	// DoctorWarn indicates a warning check.
 	DoctorWarn  = "WARN"
+	// DoctorError indicates a failed check.
 	DoctorError = "ERROR"
 )
 
+// DoctorCheck describes a single doctor check result.
 type DoctorCheck struct {
 	Name    string
 	Level   string
 	Message string
 }
 
+// DoctorResult aggregates doctor checks.
 type DoctorResult struct {
 	Checks []DoctorCheck
 }
 
+// Doctor inspects repository health and config readiness.
 func Doctor(repoPath string) (*DoctorResult, error) {
 	if repoPath == "" {
 		return nil, fmt.Errorf("repo path is required")

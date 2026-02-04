@@ -10,10 +10,12 @@ import (
 	"gitflow/pkg/types"
 )
 
+// PRViewResult contains a pull request view result.
 type PRViewResult struct {
 	PR *types.PullRequest
 }
 
+// ViewPR fetches a pull request by number.
 func ViewPR(cfg *config.Config, number int) (*PRViewResult, error) {
 	if !provider.Enabled(cfg) {
 		return nil, fmt.Errorf("provider is not configured in .gitflow.yml")

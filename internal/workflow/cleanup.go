@@ -9,6 +9,7 @@ import (
 	"gitflow/internal/git"
 )
 
+// CleanupOptions defines inputs for cleanup.
 type CleanupOptions struct {
 	RepoPath     string
 	Remote       string
@@ -19,6 +20,7 @@ type CleanupOptions struct {
 	Selected     []string
 }
 
+// CleanupResult reports cleanup candidates and deletions.
 type CleanupResult struct {
 	BaseBranch    string
 	Current       string
@@ -27,6 +29,7 @@ type CleanupResult struct {
 	Candidates    []CandidateBranch
 }
 
+// CandidateBranch describes a branch eligible for cleanup.
 type CandidateBranch struct {
 	Name    string
 	Reason  string
@@ -35,6 +38,7 @@ type CandidateBranch struct {
 	Behind  int
 }
 
+// Cleanup identifies and optionally deletes stale branches.
 func Cleanup(cfg *config.Config, opts CleanupOptions) (*CleanupResult, error) {
 	if strings.TrimSpace(opts.RepoPath) == "" {
 		return nil, fmt.Errorf("repo path is required")

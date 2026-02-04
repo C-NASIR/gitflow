@@ -9,16 +9,19 @@ import (
 	"gitflow/pkg/types"
 )
 
+// BranchListOptions defines inputs for listing branches.
 type BranchListOptions struct {
 	RepoPath string
 	Base     string
 }
 
+// BranchListResult contains branch list results.
 type BranchListResult struct {
 	Base     string
 	Branches []*types.Branch
 }
 
+// ListBranches lists local branches and metadata.
 func ListBranches(cfg *config.Config, opts BranchListOptions) (*BranchListResult, error) {
 	if strings.TrimSpace(opts.RepoPath) == "" {
 		return nil, fmt.Errorf("repo path is required")

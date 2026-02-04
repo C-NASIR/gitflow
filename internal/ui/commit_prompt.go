@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
+// CommitPromptInput captures prompt fields for commits.
 type CommitPromptInput struct {
 	Conventional bool
 
@@ -18,6 +19,7 @@ type CommitPromptInput struct {
 	All bool
 }
 
+// PromptCommit collects commit message details from the user.
 func PromptCommit(types []string, scopes []string, requireScope bool, defaults CommitPromptInput) (CommitPromptInput, error) {
 	in := defaults
 

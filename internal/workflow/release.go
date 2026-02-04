@@ -11,22 +11,26 @@ import (
 	"gitflow/internal/git"
 )
 
+// SemanticVersion represents a semantic version number.
 type SemanticVersion struct {
 	Major int
 	Minor int
 	Patch int
 }
 
+// String formats the semantic version as a string.
 func (v SemanticVersion) String() string {
 	return fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)
 }
 
+// ReleaseOptions defines inputs for release calculation.
 type ReleaseOptions struct {
 	RepoPath        string
 	DryRun          bool
 	VersionOverride *SemanticVersion
 }
 
+// ReleaseResult contains release computation outputs.
 type ReleaseResult struct {
 	BaseVersion SemanticVersion
 	NextVersion SemanticVersion
@@ -35,6 +39,7 @@ type ReleaseResult struct {
 	Tag         string
 }
 
+// CommitGroups organizes commits by release category.
 type CommitGroups struct {
 	Breaking []string
 	Features []string
@@ -42,6 +47,7 @@ type CommitGroups struct {
 	Other    []string
 }
 
+// Release computes the next release version and changelog.
 func Release(opts ReleaseOptions) (*ReleaseResult, error) {
 	if opts.RepoPath == "" {
 		return nil, fmt.Errorf("repo path is required")

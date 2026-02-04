@@ -8,6 +8,7 @@ import (
 	"gitflow/internal/git"
 )
 
+// CommitOptions defines inputs for creating a commit.
 type CommitOptions struct {
 	RepoPath string
 
@@ -23,10 +24,12 @@ type CommitOptions struct {
 	Interactive bool
 }
 
+// CommitResult reports the created commit message.
 type CommitResult struct {
 	Message string
 }
 
+// Commit creates a commit using workflow settings.
 func Commit(cfg *config.Config, opts CommitOptions) (*CommitResult, error) {
 	if opts.RepoPath == "" {
 		return nil, fmt.Errorf("repo path is required")

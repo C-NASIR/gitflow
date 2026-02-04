@@ -51,6 +51,7 @@ type StartConfig struct {
 	FetchFirst bool   `yaml:"fetch_first"`
 }
 
+// PRConfig controls pull request defaults.
 type PRConfig struct {
 	Draft            bool     `yaml:"draft"`
 	DefaultReviewers []string `yaml:"default_reviewers"`
@@ -78,6 +79,7 @@ type UIConfig struct {
 	Verbose bool `yaml:"verbose"`
 }
 
+// CommitConfig configures commit message behavior.
 type CommitConfig struct {
 	Conventional bool     `yaml:"conventional"`
 	Types        []string `yaml:"types"`
@@ -85,6 +87,7 @@ type CommitConfig struct {
 	RequireScope bool     `yaml:"require_scope"`
 }
 
+// ReleaseConfig controls release generation defaults.
 type ReleaseConfig struct {
 	DefaultBump       string   `yaml:"default_bump"`
 	ChangelogSections []string `yaml:"changelog_sections"`

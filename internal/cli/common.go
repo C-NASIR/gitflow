@@ -1,3 +1,4 @@
+// Package cli provides shared helpers for command wiring.
 package cli
 
 import (
@@ -9,11 +10,13 @@ import (
 	"gitflow/internal/ui"
 )
 
+// Common bundles config and UI context for commands.
 type Common struct {
 	ConfigResult *config.LoadResult
 	UI           *ui.UI
 }
 
+// UIOverrides applies runtime UI overrides to config.
 type UIOverrides struct {
 	Color   *bool
 	Emoji   *bool
@@ -22,10 +25,12 @@ type UIOverrides struct {
 
 var uiOverrides UIOverrides
 
+// SetUIOverrides stores overrides applied during CLI execution.
 func SetUIOverrides(overrides UIOverrides) {
 	uiOverrides = overrides
 }
 
+// CommonFromCmd constructs Common from command output and config.
 func CommonFromCmd(cmd *cobra.Command) (*Common, error) {
 	res, err := config.Load()
 	if err != nil {

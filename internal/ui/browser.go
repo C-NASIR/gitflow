@@ -6,6 +6,7 @@ import (
 	"runtime"
 )
 
+// OpenURL launches the default browser to the given URL.
 func OpenURL(url string) error {
 	var cmd *exec.Cmd
 

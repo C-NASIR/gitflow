@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Enabled reports whether provider configuration is present.
 func Enabled(cfg *config.Config) bool {
 	return strings.TrimSpace(cfg.Provider.Type) != ""
 }

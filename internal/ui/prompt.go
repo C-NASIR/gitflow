@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
+// PRPromptInput captures prompt fields for pull requests.
 type PRPromptInput struct {
 	Title       string
 	Description string
@@ -16,6 +17,7 @@ type PRPromptInput struct {
 	OpenBrowser bool
 }
 
+// PromptPR collects pull request details from the user.
 func PromptPR(defaults PRPromptInput) (PRPromptInput, error) {
 	in := defaults
 

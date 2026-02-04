@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// ValidateStrict validates config without applying defaults.
 func ValidateStrict(cfg *Config) error {
 	var errs []string
 

@@ -12,6 +12,7 @@ import (
 	"gitflow/pkg/types"
 )
 
+// PRCreateOptions defines inputs for creating a pull request.
 type PRCreateOptions struct {
 	RepoPath string
 	Remote   string
@@ -25,10 +26,12 @@ type PRCreateOptions struct {
 	Labels    []string
 }
 
+// PRCreateResult contains the created pull request.
 type PRCreateResult struct {
 	PR *types.PullRequest
 }
 
+// CreatePR creates a pull request from the current branch.
 func CreatePR(cfg *config.Config, opts PRCreateOptions) (*PRCreateResult, error) {
 	if opts.RepoPath == "" {
 		return nil, fmt.Errorf("repo path is required")
