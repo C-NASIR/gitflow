@@ -71,6 +71,9 @@ func Execute() {
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
+		if exitErr, ok := err.(interface{ ExitCode() int }); ok {
+			os.Exit(exitErr.ExitCode())
+		}
 		os.Exit(1)
 	}
 

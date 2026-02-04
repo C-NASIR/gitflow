@@ -26,3 +26,9 @@ type Branch struct {
 	Ahead  int
 	Behind int
 }
+
+type Release struct {
+	Tag  string
+	Name string
+	URL  string
+}

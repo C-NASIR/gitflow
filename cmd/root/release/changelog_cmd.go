@@ -18,12 +18,12 @@ func changelogCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := cli.CommonFromCmd(cmd)
 			if err != nil {
-				return err
+				return cli.ExitError{Err: err, Code: exitCodeConfig}
 			}
 
 			repoPath, err := os.Getwd()
 			if err != nil {
-				return fmt.Errorf("failed to get current directory: %w", err)
+				return cli.ExitError{Err: fmt.Errorf("failed to get current directory: %w", err), Code: exitCodeComputation}
 			}
 
 			out, err := workflow.Release(workflow.ReleaseOptions{
@@ -31,7 +31,7 @@ func changelogCmd() *cobra.Command {
 				DryRun:   true,
 			})
 			if err != nil {
-				return err
+				return releaseExitError(err)
 			}
 
 			for _, line := range strings.Split(out.Changelog, "\n") {

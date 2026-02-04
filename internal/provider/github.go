@@ -259,3 +259,71 @@ func (g *GitHub) ListPRs(ctx context.Context, state string) ([]*types.PullReques
 
 	return out, nil
 }
+
+func (g *GitHub) CreateRelease(tag string, name string, body string) (*types.Release, error) {
+	reqBody := map[string]any{
+		"tag_name": tag,
+		"name":     name,
+		"body":     body,
+	}
+
+	var respBody struct {
+		TagName string `json:"tag_name"`
+		Name    string `json:"name"`
+		HTMLURL string `json:"html_url"`
+	}
+
+	_, err := g.do(context.Background(), http.MethodPost, "/releases", reqBody, &respBody)
+	if err != nil {
+		if strings.Contains(err.Error(), "already_exists") || strings.Contains(err.Error(), "already exists") {
+			return nil, ErrReleaseExists
+		}
+		return nil, err
+	}
+
+	return &types.Release{
+		Tag:  respBody.TagName,
+		Name: respBody.Name,
+		URL:  respBody.HTMLURL,
+	}, nil
+}
+
+func (g *GitHub) UpdateRelease(tag string, name string, body string) (*types.Release, error) {
+	var existing struct {
+		ID      int    `json:"id"`
+		Tag     string `json:"tag_name"`
+		Name    string `json:"name"`
+		HTMLURL string `json:"html_url"`
+	}
+
+	_, err := g.do(context.Background(), http.MethodGet, fmt.Sprintf("/releases/tags/%s", tag), nil, &existing)
+	if err != nil {
+		return nil, err
+	}
+	if existing.ID == 0 {
+		return nil, fmt.Errorf("release not found for tag %s", tag)
+	}
+
+	reqBody := map[string]any{
+		"tag_name": tag,
+		"name":     name,
+		"body":     body,
+	}
+
+	var respBody struct {
+		TagName string `json:"tag_name"`
+		Name    string `json:"name"`
+		HTMLURL string `json:"html_url"`
+	}
+
+	_, err = g.do(context.Background(), http.MethodPatch, fmt.Sprintf("/releases/%d", existing.ID), reqBody, &respBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.Release{
+		Tag:  respBody.TagName,
+		Name: respBody.Name,
+		URL:  respBody.HTMLURL,
+	}, nil
+}

@@ -64,7 +64,7 @@ func Release(opts ReleaseOptions) (*ReleaseResult, error) {
 
 	cfgResult, err := config.LoadFromDir(opts.RepoPath)
 	if err != nil {
-		return nil, err
+		return nil, ConfigError{Err: err}
 	}
 
 	baseVersion, baseTag, err := latestVersion(client, cfgResult.Config.Release.TagPrefix)

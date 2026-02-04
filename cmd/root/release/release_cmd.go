@@ -9,6 +9,8 @@ func Cmd() *cobra.Command {
 	}
 	cmd.AddCommand(previewCmd())
 	cmd.AddCommand(createCmd())
+	cmd.AddCommand(versionCmd())
+	cmd.AddCommand(publishCmd())
 	cmd.AddCommand(changelogCmd())
 	return cmd
 }

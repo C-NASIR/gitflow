@@ -14,6 +14,8 @@ type Provider interface {
 	CreatePR(ctx context.Context, opts CreatePROptions) (*types.PullRequest, error)
 	GetPR(ctx context.Context, number int) (*types.PullRequest, error)
 	ListPRs(ctx context.Context, state string) ([]*types.PullRequest, error)
+	CreateRelease(tag string, name string, body string) (*types.Release, error)
+	UpdateRelease(tag string, name string, body string) (*types.Release, error)
 }
 
 type CreatePROptions struct {
@@ -41,7 +43,7 @@ func New(cfg ProviderConfig) (Provider, error) {
 	case "github":
 		return NewGitHub(cfg)
 	case "gitlab":
-		return nil, fmt.Errorf("gitlab provider not implemented yet")
+		return NewGitLab(cfg)
 	case "":
 		return nil, fmt.Errorf("provider type is empty")
 	default:

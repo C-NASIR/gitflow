@@ -112,11 +112,17 @@ func LoadFromDir(startDir string) (*LoadResult, error) {
 	path, err := findConfig(startDir)
 	if err != nil {
 		cfg := Default()
+		if err := ApplyEnvOverrides(cfg); err != nil {
+			return nil, err
+		}
 		return &LoadResult{Path: "", Config: cfg}, nil
 	}
 
 	cfg, err := loadFromPath(path)
 	if err != nil {
+		return nil, err
+	}
+	if err := ApplyEnvOverrides(cfg); err != nil {
 		return nil, err
 	}
 
@@ -180,12 +186,6 @@ func (c *Config) Validate() error {
 
 	if c.Provider.Type != "" && c.Provider.Type != "github" && c.Provider.Type != "gitlab" {
 		return fmt.Errorf("unsupported provider type: %s", c.Provider.Type)
-	}
-
-	if c.Provider.Type != "" && c.Provider.TokenEnv != "" {
-		if os.Getenv(c.Provider.TokenEnv) == "" {
-			return fmt.Errorf("provider token not found in env var: %s", c.Provider.TokenEnv)
-		}
 	}
 
 	if c.Workflows.Sync.Strategy != "rebase" && c.Workflows.Sync.Strategy != "merge" {

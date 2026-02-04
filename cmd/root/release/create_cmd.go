@@ -25,12 +25,12 @@ func createCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := cli.CommonFromCmd(cmd)
 			if err != nil {
-				return err
+				return cli.ExitError{Err: err, Code: exitCodeConfig}
 			}
 
 			repoPath, err := os.Getwd()
 			if err != nil {
-				return fmt.Errorf("failed to get current directory: %w", err)
+				return cli.ExitError{Err: fmt.Errorf("failed to get current directory: %w", err), Code: exitCodeComputation}
 			}
 
 			opts := workflow.ReleaseOptions{
@@ -40,14 +40,14 @@ func createCmd() *cobra.Command {
 			if versionOverride != "" {
 				version, ok := parseVersion(versionOverride)
 				if !ok {
-					return fmt.Errorf("invalid version override: %s", versionOverride)
+					return cli.ExitError{Err: fmt.Errorf("invalid version override: %s", versionOverride), Code: exitCodeConfig}
 				}
 				opts.VersionOverride = &version
 			}
 
 			out, err := workflow.Release(opts)
 			if err != nil {
-				return err
+				return releaseExitError(err)
 			}
 
 			c.UI.Header("Release create")
@@ -70,10 +70,10 @@ func createCmd() *cobra.Command {
 
 			client, err := git.NewClient(repoPath)
 			if err != nil {
-				return err
+				return cli.ExitError{Err: err, Code: exitCodeComputation}
 			}
 			if err := client.CreateAnnotatedTag(out.Tag, out.Changelog); err != nil {
-				return err
+				return cli.ExitError{Err: err, Code: exitCodeComputation}
 			}
 			c.UI.Success("Created tag %s", out.Tag)
 			return nil

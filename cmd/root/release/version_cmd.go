@@ -5,24 +5,20 @@ import (
 	"os"
 
 	"gitflow/internal/cli"
+	"gitflow/internal/ui"
 	"gitflow/internal/workflow"
 
 	"github.com/spf13/cobra"
 )
 
-func previewCmd() *cobra.Command {
-	var versionOverride string
+func versionCmd() *cobra.Command {
 	var jsonOutput bool
 	var envOutput bool
 
 	cmd := &cobra.Command{
-		Use:   "preview",
-		Short: "Preview the next release",
+		Use:   "version",
+		Short: "Print the next release version",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := cli.CommonFromCmd(cmd)
-			if err != nil {
-				return cli.ExitError{Err: err, Code: exitCodeConfig}
-			}
 			format, err := parseOutputFormat(jsonOutput, envOutput)
 			if err != nil {
 				return cli.ExitError{Err: err, Code: exitCodeConfig}
@@ -33,31 +29,27 @@ func previewCmd() *cobra.Command {
 				return cli.ExitError{Err: fmt.Errorf("failed to get current directory: %w", err), Code: exitCodeComputation}
 			}
 
-			opts := workflow.ReleaseOptions{
+			out, err := workflow.Release(workflow.ReleaseOptions{
 				RepoPath: repoPath,
 				DryRun:   true,
-			}
-			if versionOverride != "" {
-				version, ok := parseVersion(versionOverride)
-				if !ok {
-					return cli.ExitError{Err: fmt.Errorf("invalid version override: %s", versionOverride), Code: exitCodeConfig}
-				}
-				opts.VersionOverride = &version
-			}
-
-			out, err := workflow.Release(opts)
+			})
 			if err != nil {
 				return releaseExitError(err)
 			}
 
-			if err := outputReleasePreview(c.UI, cmd.OutOrStdout(), format, out); err != nil {
+			plainUI := ui.New(ui.Options{
+				Out:     cmd.OutOrStdout(),
+				Color:   false,
+				Emoji:   false,
+				Verbose: false,
+			})
+			if err := outputReleaseVersion(plainUI, format, out.NextVersion.String()); err != nil {
 				return cli.ExitError{Err: err, Code: exitCodeComputation}
 			}
 			return nil
 		},
 	}
 
-	cmd.Flags().StringVar(&versionOverride, "version", "", "Override computed version")
 	cmd.Flags().BoolVar(&jsonOutput, "json", false, "Output machine readable JSON")
 	cmd.Flags().BoolVar(&envOutput, "env", false, "Output KEY=VALUE lines")
 	return cmd
