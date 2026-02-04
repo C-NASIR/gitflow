@@ -2,6 +2,7 @@ package root
 
 import (
 	"fmt"
+	"gitflow/internal/cli"
 	"gitflow/internal/workflow"
 	"os"
 
@@ -13,7 +14,7 @@ func statusCmd() *cobra.Command {
 		Use:   "status",
 		Short: "Show repository status summary",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := commonFromCmd(cmd)
+			c, err := cli.CommonFromCmd(cmd)
 			if err != nil {
 				return err
 			}
@@ -29,7 +30,7 @@ func statusCmd() *cobra.Command {
 			}
 
 			c.UI.Header("Repository status")
-			printConfigSource(c.UI, c.ConfigResult.Path)
+			cli.PrintConfigSource(c.UI, c.ConfigResult.Path)
 
 			c.UI.Line("Branch: %s", s.Branch)
 			if s.Dirty {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"gitflow/internal/cli"
 	"gitflow/internal/ui"
 	"gitflow/internal/workflow"
 )
@@ -26,7 +27,7 @@ func commitCmd() *cobra.Command {
 		Use:   "commit",
 		Short: "Create a commit using conventions and optional prompts",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			common, err := commonFromCmd(cmd)
+			common, err := cli.CommonFromCmd(cmd)
 			if err != nil {
 				return err
 			}
@@ -85,10 +86,9 @@ func commitCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			common.UI.Header("Commit created")
-			common.UI.Line("Message")
 			common.UI.Line(out.Message)
+			common.UI.Success("Done")
 
 			return nil
 		},

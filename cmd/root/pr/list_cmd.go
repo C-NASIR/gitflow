@@ -3,7 +3,9 @@ package pr
 import (
 	"github.com/spf13/cobra"
 
+	"gitflow/internal/cli"
 	"gitflow/internal/config"
+	"gitflow/internal/ui"
 	"gitflow/internal/workflow"
 )
 
@@ -26,21 +28,30 @@ func listCmd() *cobra.Command {
 				return err
 			}
 
+			c, err := cli.CommonFromCmd(cmd)
+			if err != nil {
+				return err
+			}
+
+			c.UI.Header("Pull requests")
+			cli.PrintConfigSource(c.UI, c.ConfigResult.Path)
+
 			if len(out.PRs) == 0 {
 				cmd.Println("No pull requests found")
 				return nil
 			}
 
+			t := ui.NewTable(cmd.OutOrStdout())
+			t.Header("NUM", "STATE", "AUTHOR", "HEAD", "BASE", "TITLE")
 			for _, pr := range out.PRs {
-				draftText := ""
+				num := pr.Number
+				state := pr.State
 				if pr.Draft {
-					draftText = " draft"
+					state = state + " draft"
 				}
-				cmd.Printf("#%d %s %s %s%s\n", pr.Number, pr.State, pr.Author, pr.Title, draftText)
-				cmd.Printf("  head %s  base %s\n", pr.HeadBranch, pr.BaseBranch)
-				cmd.Printf("  %s\n", pr.URL)
-				cmd.Println()
+				t.Row(num, state, pr.Author, pr.HeadBranch, pr.BaseBranch, pr.Title)
 			}
+			t.Flush()
 
 			return nil
 		},

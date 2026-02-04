@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"gitflow/internal/cli"
 	"gitflow/internal/config"
 	"gitflow/internal/workflow"
 )
@@ -34,19 +35,27 @@ func viewCmd() *cobra.Command {
 				return err
 			}
 
+			c, err := cli.CommonFromCmd(cmd)
+			if err != nil {
+				return err
+			}
+
+			c.UI.Header("Pull request")
+			cli.PrintConfigSource(c.UI, c.ConfigResult.Path)
+
 			pr := out.PR
-			cmd.Printf("PR #%d\n", pr.Number)
-			cmd.Printf("Title: %s\n", pr.Title)
-			cmd.Printf("State: %s\n", pr.State)
-			cmd.Printf("Author: %s\n", pr.Author)
-			cmd.Printf("Head: %s\n", pr.HeadBranch)
-			cmd.Printf("Base: %s\n", pr.BaseBranch)
-			cmd.Printf("Draft: %v\n", pr.Draft)
-			cmd.Printf("URL: %s\n", pr.URL)
+			c.UI.Line("Number: %d", pr.Number)
+			c.UI.Line("Title: %s", pr.Title)
+			c.UI.Line("State: %s", pr.State)
+			c.UI.Line("Author: %s", pr.Author)
+			c.UI.Line("Head: %s", pr.HeadBranch)
+			c.UI.Line("Base: %s", pr.BaseBranch)
+			c.UI.Line("Draft: %v", pr.Draft)
+			c.UI.Line("URL: %s", pr.URL)
 
 			if pr.Description != "" {
-				cmd.Println()
-				cmd.Println(pr.Description)
+				c.UI.Line("")
+				c.UI.Line(pr.Description)
 			}
 
 			return nil

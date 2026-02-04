@@ -86,8 +86,8 @@ type CommitConfig struct {
 
 // LoadResult captures the config and its source path.
 type LoadResult struct {
-	Path   string
 	Config *Config
+	Path   string
 }
 
 // Load searches for a config starting from the working directory.

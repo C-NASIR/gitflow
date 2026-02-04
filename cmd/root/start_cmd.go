@@ -2,6 +2,7 @@ package root
 
 import (
 	"fmt"
+	"gitflow/internal/cli"
 	"gitflow/internal/config"
 	"gitflow/internal/workflow"
 	"os"
@@ -25,11 +26,11 @@ func startCmd() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := ensureOneKind(bugfix, hotfix); err != nil {
+			if err := cli.EnsureOneKind(bugfix, hotfix); err != nil {
 				return err
 			}
 
-			c, err := commonFromCmd(cmd)
+			c, err := cli.CommonFromCmd(cmd)
 			if err != nil {
 				return err
 			}
@@ -65,7 +66,7 @@ func startCmd() *cobra.Command {
 			}
 
 			c.UI.Header("Start branch")
-			printConfigSource(c.UI, c.ConfigResult.Path)
+			cli.PrintConfigSource(c.UI, c.ConfigResult.Path)
 
 			c.UI.Line("Base branch: %s", out.BaseBranch)
 			c.UI.Line("New branch: %s", out.NewBranch)

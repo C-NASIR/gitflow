@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 
+	"gitflow/internal/cli"
 	"gitflow/internal/workflow"
 )
 
@@ -22,7 +23,7 @@ func cleanupCmd() *cobra.Command {
 		Use:   "cleanup",
 		Short: "Delete merged or stale branches safely",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := commonFromCmd(cmd)
+			c, err := cli.CommonFromCmd(cmd)
 			if err != nil {
 				return err
 			}
@@ -45,7 +46,7 @@ func cleanupCmd() *cobra.Command {
 			}
 
 			c.UI.Header("Cleanup branches")
-			printConfigSource(c.UI, c.ConfigResult.Path)
+			cli.PrintConfigSource(c.UI, c.ConfigResult.Path)
 
 			c.UI.Line("Base branch: %s", out.BaseBranch)
 			c.UI.Line("Current branch: %s", out.Current)

@@ -2,6 +2,7 @@ package root
 
 import (
 	"fmt"
+	"gitflow/internal/cli"
 	"gitflow/internal/config"
 
 	"github.com/spf13/cobra"
@@ -13,7 +14,7 @@ func configShowCmd() *cobra.Command {
 		Use:   "show",
 		Short: "Print the resolved configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := commonFromCmd(cmd)
+			c, err := cli.CommonFromCmd(cmd)
 			if err != nil {
 				return err
 			}
@@ -23,7 +24,7 @@ func configShowCmd() *cobra.Command {
 				return err
 			}
 
-			printConfigSource(c.UI, c.ConfigResult.Path)
+			cli.PrintConfigSource(c.UI, c.ConfigResult.Path)
 			out, err := yaml.Marshal(res.Config)
 			if err != nil {
 				return fmt.Errorf("failed to render yaml: %w", err)

@@ -2,6 +2,7 @@ package root
 
 import (
 	"fmt"
+	"gitflow/internal/cli"
 	"gitflow/internal/config"
 	"gitflow/internal/workflow"
 	"os"
@@ -24,7 +25,7 @@ func syncCmd() *cobra.Command {
 				return fmt.Errorf("choose only one of merge or rebase")
 			}
 
-			c, err := commonFromCmd(cmd)
+			c, err := cli.CommonFromCmd(cmd)
 			if err != nil {
 				return err
 			}
@@ -72,7 +73,7 @@ func syncCmd() *cobra.Command {
 			}
 
 			c.UI.Header("Sync branch")
-			printConfigSource(c.UI, c.ConfigResult.Path)
+			cli.PrintConfigSource(c.UI, c.ConfigResult.Path)
 
 			c.UI.Line("Base branch: %s", out.BaseBranch)
 			c.UI.Line("Current branch: %s", out.CurrentBranch)
