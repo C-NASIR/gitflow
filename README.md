@@ -104,10 +104,23 @@ Build the binary
 go build -o gitflow .
 ```
 
-Or install globally
+Or install globally (recommended)
 
 ```bash
 go install .
+```
+
+Ensure the Go bin directory is on your PATH (zsh)
+
+```bash
+echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+Verify the install
+
+```bash
+gitflow version
 ```
 
 ---
