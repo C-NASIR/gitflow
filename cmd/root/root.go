@@ -6,6 +6,7 @@ import (
 	"gitflow/cmd/root/branch"
 	"gitflow/cmd/root/pr"
 	"gitflow/cmd/root/provider"
+	"gitflow/cmd/root/release"
 	"gitflow/internal/cli"
 	"gitflow/internal/version"
 	"os"
@@ -66,6 +67,7 @@ func Execute() {
 	rootCmd.AddCommand(provider.Cmd())
 	rootCmd.AddCommand(pr.Cmd())
 	rootCmd.AddCommand(branch.Cmd())
+	rootCmd.AddCommand(release.Cmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())

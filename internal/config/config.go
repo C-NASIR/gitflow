@@ -14,6 +14,7 @@ type Config struct {
 	Branches  BranchConfig   `yaml:"branches"`
 	Workflows WorkflowConfig `yaml:"workflows"`
 	Commits   CommitConfig   `yaml:"commits"`
+	Release   ReleaseConfig  `yaml:"release"`
 	UI        UIConfig       `yaml:"ui"`
 }
 
@@ -82,6 +83,12 @@ type CommitConfig struct {
 	Types        []string `yaml:"types"`
 	Scopes       []string `yaml:"scopes"`
 	RequireScope bool     `yaml:"require_scope"`
+}
+
+type ReleaseConfig struct {
+	DefaultBump       string   `yaml:"default_bump"`
+	ChangelogSections []string `yaml:"changelog_sections"`
+	TagPrefix         string   `yaml:"tag_prefix"`
 }
 
 // LoadResult captures the config and its source path.
@@ -161,6 +168,16 @@ func (c *Config) Validate() error {
 		c.Workflows.Cleanup.ProtectedBranches = []string{"main", "master", "develop"}
 	}
 
+	if c.Release.TagPrefix == "" {
+		c.Release.TagPrefix = "v"
+	}
+	if c.Release.DefaultBump == "" {
+		c.Release.DefaultBump = "patch"
+	}
+	if len(c.Release.ChangelogSections) == 0 {
+		c.Release.ChangelogSections = []string{"breaking", "features", "fixes", "other"}
+	}
+
 	if c.Provider.Type != "" && c.Provider.Type != "github" && c.Provider.Type != "gitlab" {
 		return fmt.Errorf("unsupported provider type: %s", c.Provider.Type)
 	}
@@ -173,6 +190,12 @@ func (c *Config) Validate() error {
 
 	if c.Workflows.Sync.Strategy != "rebase" && c.Workflows.Sync.Strategy != "merge" {
 		return fmt.Errorf("unsupported sync strategy: %s", c.Workflows.Sync.Strategy)
+	}
+
+	switch c.Release.DefaultBump {
+	case "major", "minor", "patch":
+	default:
+		return fmt.Errorf("unsupported release default bump: %s", c.Release.DefaultBump)
 	}
 	return nil
 }

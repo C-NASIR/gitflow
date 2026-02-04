@@ -40,6 +40,11 @@ func Default() *Config {
 			Scopes:       nil,
 			RequireScope: false,
 		},
+		Release: ReleaseConfig{
+			DefaultBump:       "patch",
+			ChangelogSections: []string{"breaking", "features", "fixes", "other"},
+			TagPrefix:         "v",
+		},
 		UI: UIConfig{
 			Color:   true,
 			Emoji:   false,
