@@ -127,7 +127,7 @@ Checks include
 ### Branch management
 
 ```
-gitflow start
+gitflow start <name>
 ```
 
 Creates a new branch using configured naming conventions.
@@ -136,7 +136,7 @@ Creates a new branch using configured naming conventions.
 gitflow branch list
 ```
 
-Lists local branches with age and ahead behind analytics.
+Lists local branches with age and ahead/behind analytics.
 
 ```
 gitflow cleanup
@@ -161,7 +161,7 @@ gitflow pr list
 Lists pull requests with consistent table output.
 
 ```
-gitflow pr view
+gitflow pr view <number>
 ```
 
 Shows detailed pull request information.
@@ -211,9 +211,48 @@ Commands support
 1. JSON output
 2. Environment variable output
 3. No color mode
-4. Non interactive operation
+4. Non-interactive operation
 
 This allows Gitflow to be used in pipelines for versioning, artifacts, and releases.
+
+---
+
+## Commands
+
+### General
+
+- `gitflow version` prints the gitflow build version.
+- `gitflow status` shows the repository status summary.
+- `gitflow doctor` runs diagnostics without mutating the repo.
+- `gitflow init` writes a starter `.gitflow.yml` file.
+- `gitflow config show` prints the resolved configuration.
+- `gitflow config validate` validates configuration and reports errors.
+
+### Branches and sync
+
+- `gitflow start <name>` starts a new branch using conventions.
+- `gitflow sync` syncs the current branch with the base branch.
+- `gitflow commit` creates a commit using conventions or prompts.
+- `gitflow cleanup` deletes merged or stale branches safely.
+- `gitflow branch list` lists local branches with age and ahead/behind.
+
+### Pull requests
+
+- `gitflow pr create` creates a pull request for the current branch.
+- `gitflow pr list` lists pull requests from the provider.
+- `gitflow pr view <number>` shows a pull request by number.
+
+### Providers
+
+- `gitflow provider check` validates provider credentials and access.
+
+### Releases
+
+- `gitflow release preview` previews the next version and changelog.
+- `gitflow release create` creates an annotated tag with changelog.
+- `gitflow release changelog` outputs the changelog since last release.
+- `gitflow release version` prints the next release version.
+- `gitflow release publish` publishes release notes to the provider.
 
 ---
 
@@ -316,13 +355,13 @@ cd gitflow
 Build the binary
 
 ```bash
-go build -o gitflow cmd/gitflow/main.go
+go build -o gitflow .
 ```
 
 Or install globally
 
 ```bash
-go install run main.go
+go install .
 ```
 
 ---
