@@ -79,180 +79,36 @@ Errors are consistent and actionable.
 
 ---
 
-## Project structure
-
-The project is organized around clear boundaries.
-
-cmd contains CLI commands only  
-internal contains implementation details  
-pkg contains shared domain types
-
-High level architecture
-
-CLI commands call workflows  
-Workflows orchestrate Git, config, providers, and UI  
-Git helpers wrap Git commands safely  
-Providers abstract GitHub and GitLab APIs
-
-This separation makes the project testable, extensible, and easy to reason about.
-
----
-
 ## Key features
 
-### Status and diagnostics
-
-```
-gitflow status
-```
-
-Shows branch, working tree state, and configuration source.
-
-```
-gitflow doctor
-```
-
-Diagnoses common issues without mutating the repository.
-
-Checks include
-
-1. Is this a Git repository?
-2. Is the working tree clean?
-3. Is configuration present?
-4. Is configuration valid?
-5. Are provider credentials available?
+- **Status and diagnostics**: Repository health checks, including `gitflow status` and `gitflow doctor`.
+- **Branch management**: Start, sync, commit, clean up, and inspect branches safely.
+- **Pull request workflows**: Create, list, and view PRs via GitHub or GitLab.
+- **Release system**: Deterministic versioning, changelogs, tags, and publishing.
+- **CI-friendly output**: JSON, env, no-color, and non-interactive modes.
 
 ---
 
-### Branch management
+## Installation
 
-```
-gitflow start <name>
-```
+Clone the repository
 
-Creates a new branch using configured naming conventions.
-
-```
-gitflow branch list
+```bash
+git clone https://github.com/C-NASIR/gitflow
+cd gitflow
 ```
 
-Lists local branches with age and ahead/behind analytics.
+Build the binary
 
-```
-gitflow cleanup
-```
-
-Safely deletes merged or stale branches with interactive selection.
-
----
-
-### Pull request workflows
-
-```
-gitflow pr create
+```bash
+go build -o gitflow .
 ```
 
-Creates pull requests via GitHub or GitLab APIs.
+Or install globally
 
+```bash
+go install .
 ```
-gitflow pr list
-```
-
-Lists pull requests with consistent table output.
-
-```
-gitflow pr view <number>
-```
-
-Shows detailed pull request information.
-
-All provider interactions are optional and validated.
-
----
-
-### Release system
-
-Gitflow includes a complete deterministic release workflow.
-
-```
-gitflow release preview
-```
-
-Computes the next version and changelog without side effects.
-
-```
-gitflow release create
-```
-
-Creates annotated Git tags safely.
-
-```
-gitflow release changelog
-```
-
-Generates changelog output only.
-
-Release logic is based entirely on commit history and conventional commits.
-
----
-
-### CI and automation support
-
-Gitflow is safe to run in CI environments.
-
-```
-gitflow release version
-```
-
-Outputs the next version as a single line.
-
-Commands support
-
-1. JSON output
-2. Environment variable output
-3. No color mode
-4. Non-interactive operation
-
-This allows Gitflow to be used in pipelines for versioning, artifacts, and releases.
-
----
-
-## Commands
-
-### General
-
-- `gitflow version` prints the gitflow build version.
-- `gitflow status` shows the repository status summary.
-- `gitflow doctor` runs diagnostics without mutating the repo.
-- `gitflow init` writes a starter `.gitflow.yml` file.
-- `gitflow config show` prints the resolved configuration.
-- `gitflow config validate` validates configuration and reports errors.
-
-### Branches and sync
-
-- `gitflow start <name>` starts a new branch using conventions.
-- `gitflow sync` syncs the current branch with the base branch.
-- `gitflow commit` creates a commit using conventions or prompts.
-- `gitflow cleanup` deletes merged or stale branches safely.
-- `gitflow branch list` lists local branches with age and ahead/behind.
-
-### Pull requests
-
-- `gitflow pr create` creates a pull request for the current branch.
-- `gitflow pr list` lists pull requests from the provider.
-- `gitflow pr view <number>` shows a pull request by number.
-
-### Providers
-
-- `gitflow provider check` validates provider credentials and access.
-
-### Releases
-
-- `gitflow release preview` previews the next version and changelog.
-- `gitflow release create` creates an annotated tag with changelog.
-- `gitflow release changelog` outputs the changelog since last release.
-- `gitflow release version` prints the next release version.
-- `gitflow release publish` publishes release notes to the provider.
 
 ---
 
@@ -322,6 +178,45 @@ This makes Gitflow usable both locally and in CI.
 
 ---
 
+## Commands
+
+### General
+
+- `gitflow version` prints the gitflow build version.
+- `gitflow status` shows the repository status summary.
+- `gitflow doctor` runs diagnostics without mutating the repo.
+- `gitflow init` writes a starter `.gitflow.yml` file.
+- `gitflow config show` prints the resolved configuration.
+- `gitflow config validate` validates configuration and reports errors.
+
+### Branches and sync
+
+- `gitflow start <name>` starts a new branch using conventions.
+- `gitflow sync` syncs the current branch with the base branch.
+- `gitflow commit` creates a commit using conventions or prompts.
+- `gitflow cleanup` deletes merged or stale branches safely.
+- `gitflow branch list` lists local branches with age and ahead/behind.
+
+### Pull requests
+
+- `gitflow pr create` creates a pull request for the current branch.
+- `gitflow pr list` lists pull requests from the provider.
+- `gitflow pr view <number>` shows a pull request by number.
+
+### Providers
+
+- `gitflow provider check` validates provider credentials and access.
+
+### Releases
+
+- `gitflow release preview` previews the next version and changelog.
+- `gitflow release create` creates an annotated tag with changelog.
+- `gitflow release changelog` outputs the changelog since last release.
+- `gitflow release version` prints the next release version.
+- `gitflow release publish` publishes release notes to the provider.
+
+---
+
 ## Testing philosophy
 
 This project is heavily tested.
@@ -340,43 +235,6 @@ go test ./...
 ```
 
 No network access is required.
-
----
-
-## Installation
-
-Clone the repository
-
-```bash
-git clone https://github.com/C-NASIR/gitflow
-cd gitflow
-```
-
-Build the binary
-
-```bash
-go build -o gitflow .
-```
-
-Or install globally
-
-```bash
-go install .
-```
-
----
-
-## Daily usage examples
-
-```bash
-gitflow status
-gitflow start user auth
-gitflow pr create
-gitflow branch list
-gitflow cleanup
-gitflow release preview
-gitflow release create
-```
 
 ---
 
